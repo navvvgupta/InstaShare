@@ -8,7 +8,7 @@ port = 9999
 
 s.connect((host, port))
 
-file = open("abhinav/test.txt", "r")
+file = open("test_file/test.txt", "r")
 data = file.read()
 
 s.send("test.txt".encode("utf-8"))

@@ -1,5 +1,6 @@
 import socket
 import sys
+import select
 
 SIZE = 1024
 FORMAT = "utf-8"
@@ -53,7 +54,7 @@ def socket_accept():
 
                 else:
                     print("Connection not accepted.")
-                    return
+                    return
 
 # Send commands to client/victim or a friend
 def send_commands(conn):
