@@ -1,10 +1,9 @@
 import socket
 import sys
 import select
-
-SIZE = 1024
+import threading
 FORMAT = "utf-8"
-# Create a Socket ( connect two computers)
+
 def create_socket():
     try:
         global host
@@ -12,7 +11,7 @@ def create_socket():
         global s
         host = ""
         port = 9999
-        s = socket.socket()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     except socket.error as msg:
         print("Socket creation error: " + str(msg))
@@ -35,8 +34,8 @@ def bind_socket():
 
 
 # Establish connection with a client (socket must be listening)
-
 def socket_accept():
+    global conn
     global s
     sockets_list = [s]
     while True:
@@ -48,16 +47,15 @@ def socket_accept():
                 if accept_connection.lower() == "yes":
                     conn, address = s.accept()
                     print("Connection has been established! |" + " IP " + address[0] + " | Port" + str(address[1]))
-                    send_commands(conn)
-                    conn.close()
-                    return  
+                    conn.send("Connected to the server!".encode('utf-8'))
+                    return conn
 
                 else:
                     print("Connection not accepted.")
                     return
 
 # Send commands to client/victim or a friend
-def send_commands(conn):
+def send_file():
     while True:        
         #file ka name recieve kiya
         filename = conn.recv(1024).decode(FORMAT)
@@ -71,17 +69,35 @@ def send_commands(conn):
         conn.send("Filename received.".encode(FORMAT))
 
         #file ka data recieve kiya
-        data = conn.recv(SIZE).decode(FORMAT)
+        data = conn.recv(1024).decode(FORMAT)
         print(f"[RECV] Receiving the file data.")
         file.write(data)
         conn.send("File data received".encode(FORMAT))
 
         file.close()
 
-def main():
+def incoming_msg():
+    global conn
+    while True:
+            data = conn.recv(1024).decode(FORMAT)
+            if data:
+                print(f"<client> {data}")
+
+def outgoing_msg():
+    global conn
+    while True:
+        msg = "<server>" + input()
+        conn.send(msg.encode(FORMAT))
+        print(msg)
+
+
+def main(): 
     create_socket()
     bind_socket()
     socket_accept()
 
-
 main()
+send_thread = threading.Thread(target=incoming_msg)
+send_thread.start()
+receive_thread = threading.Thread(target=outgoing_msg)
+receive_thread.start()
