@@ -1,32 +1,48 @@
 import socket
 import threading
 
-global s
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = '192.168.1.101'
-port = 9999
-s.connect((host, port))
+# Choosing Nickname
+nickname = input("Choose your nickname: ")
 
-def incoming_msg():
-    global s
+# Connecting To Server
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 9999))
+
+# global s
+# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# host = '192.168.1.101'
+# port = 9999
+# s.connect((host, port))
+
+# Listening to Server and Sending Nickname
+def receive():
     while True:
-        data = str(s.recv(1024).decode('utf-8'))
-        if data:
-            print(f"<server>  {data}")
+        try:
+            # Receive Message From Server
+            # If 'NICK' Send Nickname
+            message = client.recv(1024).decode('utf-8')
+            if message == 'NICK':
+                client.send(nickname.encode('utf-8'))
+            else:
+                print(message)
+        except:
+            # Close Connection When Error
+            print("An error occurred!")
+            client.close()
+            break
 
-def outgoing_msg():
-    global s
+# Sending Messages To Server
+def write():
     while True:
-        msg = input()
-        s.send(msg.encode("utf-8"))
-        print('<client> ' + str(msg))
+        message = '{}: {}'.format(nickname, input(''))
+        client.send(message.encode('utf-8'))
 
-send_thread = threading.Thread(target=incoming_msg)
-send_thread.start()
-
-receive_thread = threading.Thread(target=outgoing_msg)
+# Starting Threads For Listening And Writing
+receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
+write_thread = threading.Thread(target=write)
+write_thread.start()
 # file = open("test_file/test.txt", "r")
 # data = file.read()
 
