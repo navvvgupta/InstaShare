@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import json
 # Choosing Nickname
 nickname = input("Choose your nickname: ")
 
@@ -15,6 +15,16 @@ client.connect(('127.0.0.1', 9999))
 # s.connect((host, port))
 
 # Listening to Server and Sending Nickname
+
+def list_allUser(message):
+    client.send(message.encode('utf-8'))
+    list_user=client.recv(1024).decode("utf-8")
+    user_map = json.loads(list_user)
+    # print('HI')
+    # print(user_map)
+    # for username, ip_address in user_map.items():
+    #     print(f"Username: {username}, IP Address: {ip_address}")
+
 def receive():
     while True:
         try:
@@ -35,6 +45,8 @@ def receive():
 def write():
     while True:
         message = '{}: {}'.format(nickname, input(''))
+        if(message==f"{nickname}: list_all_user"):
+            list_allUser(message)
         client.send(message.encode('utf-8'))
 
 # Starting Threads For Listening And Writing
