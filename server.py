@@ -3,17 +3,19 @@ import sys
 import select
 import threading
 import json
+from db.connect import connect_to_mongodb
+from helper.auth import isAuth
+from helper.userRegistation import userRegistration
+from helper.listOnlineUser import listOnlineUser
+from helper.broadcast import broadcast
+from helper.setofflineStatus import setOfflineStatus
 FORMAT = "utf-8"
 
 # Lists For Clients and Their Nicknames
 clients = []
-nicknames = []
+usernames = []
 ip_address_map = {}
 
-# Sending Messages To All Connected Clients
-def broadcast(message):
-    for client in clients:
-        client.send(message)
 
 #create socket
 def create_socket():
@@ -49,87 +51,54 @@ def handle(client):
         try:
             message = client.recv(1024).decode('utf-8')
             if "list_all_user" in message:
-                ip_address_map_str = json.dumps(ip_address_map)
-                print(ip_address_map_str)
-                encoded_data = ip_address_map_str.encode('utf-8')
-                # print(encoded_data)
-                client.send(encoded_data)
+                online_users_info = listOnlineUser()
+                client.send(online_users_info.encode('utf-8'))
+            elif "close" in message:
+                 index=clients.index(client)
+                 clients.remove(client)
+                 username=usernames[index]
+                 usernames.remove(username)
+                 client.close()
+                 setOfflineStatus(username)
+                 online_users_info = listOnlineUser()
+                 broadcast(online_users_info.encode('utf-8'),clients)
+
             elif message:
             # Broadcasting Messages
                 print(message)
-                broadcast(message.encode('utf-8'))
+                broadcast(message.encode('utf-8'),clients)
         except:
             # Removing And Closing Clients
-            index = clients.index(client)
+            index=clients.index(client)
             clients.remove(client)
+            username=usernames[index]
+            usernames.remove(username)
             client.close()
-            nickname = nicknames[index]
-            broadcast('{} left!'.format(nickname).encode('utf-8'))
-            nicknames.remove(nickname)
+            setOfflineStatus(username)
+            online_users_info = listOnlineUser()
+            broadcast(online_users_info.encode('utf-8'),clients)
             break
 
-# Establish connection with a client (socket must be listening)
-def socket_accept():
-    global conn
-    global s
-    sockets_list = [s]
-    while True:
-        read_sockets, _, _ = select.select(sockets_list, [], [])
-
-        for notified_socket in read_sockets:
-            if notified_socket == s:
-                accept_connection = input(f"Do you want to accept the connection from {notified_socket}? (yes/no): ")
-                if accept_connection.lower() == "yes":
-                    conn, address = s.accept()
-                    print("Connection has been established! |" + " IP " + address[0] + " | Port" + str(address[1]))
-                    conn.send("Connected to the server!".encode('utf-8'))
-                    return conn
-
-                else:
-                    print("Connection not accepted.")
-                    return
-
-# Send commands to client/victim or a friend
-def send_file():
-    while True:        
-        #file ka name received
-        filename = conn.recv(1024).decode(FORMAT)
-        if(filename == ""):
-            conn.close()
-            s.close()
-            sys.exit()
-        print(filename)
-        print(f"[RECV] Receiving the filename.")
-        file = open(filename, "w")
-        conn.send("Filename received.".encode(FORMAT))
-
-        #file ka data received
-        data = conn.recv(1024).decode(FORMAT)
-        print(f"[RECV] Receiving the file data.")
-        file.write(data)
-        conn.send("File data received".encode(FORMAT))
-
-        file.close()
 
 # Receiving / Listening Function
 def receive():
     while True:
         # Accept Connection
         client, address = s.accept()
+        userInfo_json = client.recv(1024).decode('utf-8')
+        userInfo = json.loads(userInfo_json)
+        if userInfo['isLoginAuth'] =='False':
+            userRegistration(userInfo,client,clients,usernames)
+        elif userInfo['isLoginAuth'] =='True':
+            isAuth(userInfo,client,clients,usernames)
+
         print("Connected with {}".format(str(address)))
+        online_users_info = listOnlineUser()
+        broadcast(online_users_info.encode('utf-8'),clients)
 
-        # Request And Store Nickname
-        client.send('NICK'.encode('utf-8'))
-        nickname = client.recv(1024).decode('utf-8')
-        nicknames.append(nickname)
-        clients.append(client)
-        ip_address_map[nickname] = address[0]
-
-        # Print And Broadcast Nickname
-        print("Nickname is {}".format(nickname))
-        broadcast("{} joined!".format(nickname).encode('utf-8'))
+        
         client.send('Connected to server!'.encode('utf-8'))
-
+       
         # Start Handling Thread For Client
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
@@ -137,6 +106,7 @@ def receive():
 def main(): 
     create_socket()
     bind_socket()
+    connect_to_mongodb()
     receive()
 
 main()

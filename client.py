@@ -2,13 +2,23 @@ import socket
 import threading
 import select
 import subprocess
+import json
 
 # Choosing Nickname
 nickname = input("Choose your nickname: ")
 
+metaData = {
+    "username": "ajaySingh",
+    "password": "123456789",
+    "ip_address": "192.168.137.1",
+    "isLoginAuth":"True"
+}
+metadata_json = json.dumps(metaData)
+
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('192.168.137.1', 9999))
+client.send(metadata_json.encode('utf-8'))
 
 # global s
 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,9 +98,7 @@ def socket_accept():
     global s
     sockets_list = [s]
     while True:
-        print("after while")
         read_sockets, _, _ = select.select(sockets_list, [], [])
-        print("in accept fxn")
 
         # for notified_socket in read_sockets:
         #     if notified_socket == s:
