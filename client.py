@@ -1,33 +1,67 @@
 import socket
 import threading
-import select
-import subprocess
+import tqdm
+import os
 
-# Choosing Nickname
+BUFFER_SIZE = 1024
+SEPARATOR = '<SEPARATOR>'
 nickname = input("Choose your nickname: ")
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('192.168.137.1', 9999))
 
-# global s
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# host = '192.168.1.101'
-# port = 9999
-# s.connect((host, port))
+def receive_file(newclient):
+    received = newclient.recv(BUFFER_SIZE).decode()
+    filename, filesize = received.split(SEPARATOR)
+    # remove absolute path if there is
+    filename = os.path.basename(filename)
+    # convert to integer
+    filesize = int(filesize)
+    # start receiving the file from the socket
+    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    with open(filename, "wb") as f:
+        while True:
+            # read 1024 bytes from the socket (receive)
+            bytes_read = newclient.recv(BUFFER_SIZE)
+            if not bytes_read:    
+                progress.close()
+                break
+            # write to the file the bytes we just received
+            f.write(bytes_read)
+            progress.update(len(bytes_read))
+
+def send_file():
+    filename = "About.Time.2013.720p.x264.English.Hindi.mkv"
+    filesize = os.path.getsize(filename)
+    conn.send(f"{filename}{SEPARATOR}{filesize}".encode())
+    # start sending the file
+    progress = tqdm.tqdm(range(filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+    with open(filename, "rb") as f:
+        while True:
+            # read the bytes from the file
+            bytes_read = f.read(BUFFER_SIZE)
+            if not bytes_read:
+                progress.close()
+                break
+            # we use sendall to assure transmission in busy networks
+            conn.sendall(bytes_read)
+            # update the progress bar
+            progress.update(len(bytes_read))
 
 def clientfxn():
     print(1)
     global ip
     newclient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     newclient.connect((ip, 10500))
+    msg = newclient.recv(1024).decode('utf-8')
+    print(msg)
+    receive_file(newclient)
 
 # Listening to Server and Sending Nickname
 def receive():
     while True:
         try:
-            # Receive Message From Server
-            # If 'NICK' Send Nickname
             message = client.recv(1024).decode('utf-8')
             if message == 'NICK':
                 client.send(nickname.encode('utf-8'))
@@ -86,37 +120,22 @@ def bind_socket():
 def socket_accept():
     global conn
     global s
-    sockets_list = [s]
     while True:
         print("after while")
-        read_sockets, _, _ = select.select(sockets_list, [], [])
         print("in accept fxn")
 
-        # for notified_socket in read_sockets:
-        #     if notified_socket == s:
-        #         accept_connection = input(f"Do you want to accept the connection from {notified_socket}? (yes/no): ")
-        #         if accept_connection.lower() == "yes":
-                    # subprocess.run(['start', 'cmd'], shell=True)
         conn, address = s.accept()
         print("Connection has been established! |" + " IP " + address[0] + " | Port" + str(address[1]))
-        conn.send("Connected to the server!".encode('utf-8'))
-        subprocess.run(['start', 'cmd'], shell=True)
-                    # subprocess.run(['start', 'cmd', '/k', 'python', 'your_server_script.py'])
+        conn.send("Connected to the client server!".encode('utf-8'))
         return conn
-
-                # else:
-                #     print("Connection not accepted.")
-                #     return
 
 def server():
     create_socket()
     bind_socket()
     socket_accept()
+    send_file()
 
 
-    # subprocess.run(['start', 'cmd', '/k', 'python', 'your_server_script.py'])
-
-# Starting Threads For Listening And Writing
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
@@ -125,17 +144,3 @@ write_thread.start()
 
 server_thread = threading.Thread(target=server)
 server_thread.start()
-
-client_thread = threading.Thread(target=clientfxn)
-# file = open("test_file/test.txt", "r")
-# data = file.read()
-
-# s.send("test.txt".encode("utf-8"))
-# msg = s.recv(1024).decode("utf-8")
-# print(f"[SERVER]: {msg}")
-
-# s.send(data.encode("utf-8"))
-# msg = s.recv(1024).decode("utf-8")
-# print(f"[SERVER]: {msg}")
-# file.close()
-# s.close()
