@@ -89,28 +89,6 @@ def socket_accept():
                     print("Connection not accepted.")
                     return
 
-# Send commands to client/victim or a friend
-def send_file():
-    while True:        
-        #file ka name received
-        filename = conn.recv(1024).decode(FORMAT)
-        if(filename == ""):
-            conn.close()
-            s.close()
-            sys.exit()
-        print(filename)
-        print(f"[RECV] Receiving the filename.")
-        file = open(filename, "w")
-        conn.send("Filename received.".encode(FORMAT))
-
-        #file ka data received
-        data = conn.recv(1024).decode(FORMAT)
-        print(f"[RECV] Receiving the file data.")
-        file.write(data)
-        conn.send("File data received".encode(FORMAT))
-
-        file.close()
-
 # Receiving / Listening Function
 def receive():
     while True:
