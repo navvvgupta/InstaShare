@@ -40,18 +40,20 @@ def send_file(file_transfer_conn,file_name):
 
 # File transfer server(runs on every client)
 def file_transfer_server():
-    try:
-        print("File transfer server is running...")
-        host = ""
-        port = 10500
-        file_transfer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        file_transfer_socket.bind((host, port))
-        file_transfer_socket.listen()
-        file_transfer_conn, address = file_transfer_socket.accept()
-        file_name = file_transfer_conn.recv(1024).decode('utf-8')
-        send_file(file_transfer_conn,file_name)
-    except socket.error as msg:
-        print("Socket creation error: " + str(msg))
+    while True:
+        try:
+            print("File transfer server is running...")
+            host = ""
+            port = 10500
+            file_transfer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            file_transfer_socket.bind((host, port))
+            file_transfer_socket.listen()
+            file_transfer_conn, address = file_transfer_socket.accept()
+            file_name = file_transfer_conn.recv(1024).decode('utf-8')
+            send_file(file_transfer_conn,file_name)
+            file_transfer_conn.close()
+        except socket.error as msg:
+            print("Socket creation error: " + str(msg))
 
 # Listening to Server and Sending Nickname
 def listen_messages():
@@ -71,25 +73,30 @@ def listen_messages():
 
 #Receive the file sent from the client
 def receive_file(client_conn):
-    #receive the file infos(FileName+FileSize)
-    file_info_data = client_conn.recv(BUFFER_SIZE).decode()
-    filename, filesize = file_info_data.split(SEPARATOR)
-    # remove absolute path if there is
-    filename = os.path.basename(filename)
-    # convert to integer
-    filesize = int(filesize)
-    # start receiving the file from the socket
-    progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, "wb") as f:
-        while True:
-            # read 1024 bytes from the socket (receive)
-            bytes_read = client_conn.recv(BUFFER_SIZE)
-            if not bytes_read:    
-                progress.close()
-                break
-            # write to the file the bytes we just received
-            f.write(bytes_read)
-            progress.update(len(bytes_read))
+    try:
+        #receive the file infos(FileName+FileSize)
+        file_info_data = client_conn.recv(BUFFER_SIZE).decode()
+        filename, filesize = file_info_data.split(SEPARATOR)
+        # remove absolute path if there is
+        filename = os.path.basename(filename)
+        # convert to integer
+        filesize = int(filesize)
+        # start receiving the file from the socket
+        progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+        with open(filename, "wb") as f:
+            while True:
+                # read 1024 bytes from the socket (receive)
+                bytes_read = client_conn.recv(BUFFER_SIZE)
+                if not bytes_read:    
+                    progress.close()
+                    f.close()
+                    break
+                # write to the file the bytes we just received
+                f.write(bytes_read)
+                progress.update(len(bytes_read))
+            client_conn.close()
+    except socket.error as msg:
+        print("Erorr aaya hai",str(msg))
 
 #Establish client to client connection
 def client_to_client_conn(ip,file_name):
