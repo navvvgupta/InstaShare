@@ -1,10 +1,8 @@
 import socket
-import sys
 import threading
 import os
 import tqdm
 import select
-
 global main_server_conn
 BUFFER_SIZE = 1024
 SEPARATOR = '<SEPARATOR>'
@@ -22,23 +20,26 @@ def connect_to_main_server():
 #connect with the main server
 connect_to_main_server()
 
-def send_file(file_transfer_conn,file_name):
+def send_file(file_transfer_conn):
     try:
+        file_name = file_transfer_conn.recv(1024).decode('utf-8')
         filesize = os.path.getsize(file_name)
         file_transfer_conn.send(f"{file_name}{SEPARATOR}{filesize}".encode())
+        filesize=int(filesize)
+        total_packet=filesize/1024
+        send_packet=0
         # start sending the file
         progress = tqdm.tqdm(range(filesize), f"Sending {file_name}", unit="B", unit_scale=True, unit_divisor=1024)
         with open(file_name, "rb") as f:
-            while True:
+            while send_packet < total_packet:
                 # read the bytes from the file
                 bytes_read = f.read(BUFFER_SIZE)
-                if not bytes_read:
-                    progress.close()
-                    break
                 # we use sendall to assure transmission in busy networks
                 file_transfer_conn.sendall(bytes_read)
+                send_packet+=1
                 # update the progress bar
                 progress.update(len(bytes_read))
+            progress.close()
     
     except Exception as e:
         print(f"Error during file transfer: {e}")
@@ -61,9 +62,9 @@ def file_transfer_server():
             for notified_socket in read_sockets:
                 if notified_socket == file_transfer_socket:
                     file_transfer_conn, address = file_transfer_socket.accept()
-                    file_name = file_transfer_conn.recv(1024).decode('utf-8')
-                    send_file(file_transfer_conn,file_name)
-                    file_transfer_conn.close()
+                    send_file_thread = threading.Thread(target=send_file, args=(file_transfer_conn,))
+                    send_file_thread.start()
+
     except socket.error as msg:
         print("Socket creation error: " + str(msg))
 
@@ -142,3 +143,7 @@ listen_message_thread.start()
 
 file_transfer_server_thread = threading.Thread(target=file_transfer_server)
 file_transfer_server_thread.start()
+
+broadcast_message_thread.join()
+listen_message_thread.join()
+file_transfer_server_thread.join()
