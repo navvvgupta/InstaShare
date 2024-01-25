@@ -1,8 +1,11 @@
 import socket
 import sys
-
+import os
+import tqdm
 SIZE = 1024
 FORMAT = "utf-8"
+SEPARATOR = "<SEPARATOR>"
+BUFFER_SIZE = 1024  # send 4096 bytes each time step
 # Create a Socket ( connect two computers)
 def create_socket():
     try:
@@ -41,28 +44,41 @@ def socket_accept():
     send_commands(conn)
     conn.close()
 
+def receive_file(client_conn):
+    try:
+        file_info_data = client_conn.recv(BUFFER_SIZE).decode('utf-8')
+        file_name_here, file_size = file_info_data.split(SEPARATOR)
+        print('Hello')
+        receive_single_file(client_conn, file_info_data)
+
+    except Exception as e:
+        print(f"Error during file/folder reception: {e}")
+    finally:
+        # Close the connection after completing the file/folder reception
+        client_conn.close()
+
+def receive_single_file(client_conn, file_info_data):
+    try:
+        filename, filesize = file_info_data.split(SEPARATOR)
+        filename = os.path.basename(filename)
+        filesize = int(filesize)
+
+        progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+        with open(filename, "wb") as f:
+            while True:
+                bytes_read = client_conn.recv(BUFFER_SIZE)
+                if not bytes_read:
+                    progress.close()
+                    f.close()
+                    break
+                f.write(bytes_read)
+                progress.update(len(bytes_read))
+
+    except Exception as e:
+        print(f"Error during file reception: {e}")
 # Send commands to client/victim or a friend
-def send_commands(conn):
-    while True:        
-        #file ka name recieve kiya
-        filename = conn.recv(1024).decode(FORMAT)
-        if(filename == ""):
-            conn.close()
-            s.close()
-            sys.exit()
-        print(filename)
-        print(f"[RECV] Receiving the filename.")
-        file = open(filename, "w")
-        conn.send("Filename received.".encode(FORMAT))
-
-        #file ka data recieve kiya
-        data = conn.recv(SIZE).decode(FORMAT)
-        print(f"[RECV] Receiving the file data.")
-        file.write(data)
-        conn.send("File data received".encode(FORMAT))
-
-        file.close()
-
+def send_commands(conn):      
+        receive_file(conn)
 def main():
     create_socket()
     bind_socket()
