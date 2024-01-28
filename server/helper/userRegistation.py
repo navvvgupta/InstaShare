@@ -7,7 +7,7 @@ def userRegistration(userInfo, client,clients,usernames):
         existing_user = User.objects(username=userInfo["username"]).first()
         if existing_user:
             client.send('Username already exists. Choose a different username.'.encode('utf-8'))
-            return
+            return False
 
         hashed_password = bcrypt.hashpw(userInfo["password"].encode('utf-8'), bcrypt.gensalt())
         
@@ -20,7 +20,7 @@ def userRegistration(userInfo, client,clients,usernames):
         new_user.save()
         clients.append(client)
         usernames.append(userInfo["username"])
-        client.send('Registration successful. You can now log in.'.encode('utf-8'))
+        client.send('Registration successful. Connected to server.'.encode('utf-8'))
         return True
 
     except Exception as e:

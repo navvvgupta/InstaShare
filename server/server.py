@@ -82,12 +82,13 @@ def receive():
     while True:
         # Accept Connection
         client, address = s.accept()
-        userInfo_json = client.recv(1024).decode(FORMAT)
+        userInfo_json = client.recv(1024).decode(FORMAT) # first recv
         userInfo = json.loads(userInfo_json)
+        print(userInfo)
         flag = False
-        if userInfo['isLoginAuth'] =='False':
+        if userInfo['isLoginAuth'] =="False":
             flag = userRegistration(userInfo,client,clients,usernames)
-        elif userInfo['isLoginAuth'] =='True':
+        elif userInfo['isLoginAuth'] =="True":
             flag = isAuth(userInfo,client,clients,usernames)
         
         if flag == True:
