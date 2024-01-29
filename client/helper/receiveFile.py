@@ -18,7 +18,7 @@ def receive_file(client_conn):
     try:
         file_info_data = client_conn.recv(BUFFER_SIZE).decode('utf-8')
         file_name_here, file_size = file_info_data.split(SEPARATOR)
-        print(file_info_data)
+        print(file_name_here)
         if file_name_here.endswith('.zip'):
             print('AACHA bache')
             receive_folder(client_conn, file_name_here)
@@ -60,7 +60,7 @@ def receive_folder(client_conn, zip_file_path):
         downloads_path = get_downloads_folder()
         zip_file_path = os.path.join(downloads_path, zip_file_path)
         receive_zip_file(client_conn, zip_file_path)
-
+        folder_name=os.path.join(downloads_path,folder_name)
         shutil.unpack_archive(zip_file_path, folder_name, 'zip')
         os.remove(zip_file_path)
 
