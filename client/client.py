@@ -9,9 +9,9 @@ SEPARATOR = '<SEPARATOR>'
 metaData = {
     "username": "pranavz",
     "password": "123456789",
-    "ip_address": "127.0.0.1",
+    "ip_address": "192.168.137.197",
 }
-serverIP = '127.0.0.1'
+serverIP = '192.168.137.1'
 global metadata_json
 metadata_json = json.dumps(metaData)
 

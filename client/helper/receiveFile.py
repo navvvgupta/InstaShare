@@ -1,36 +1,66 @@
 import socket
 import os
 import tqdm
+import shutil
 BUFFER_SIZE = 1024
 SEPARATOR = '<SEPARATOR>'
 
 def receive_file(client_conn):
     try:
-        #receive the file infos(FileName+FileSize)
-        file_info_data = client_conn.recv(BUFFER_SIZE).decode()
+        file_info_data = client_conn.recv(BUFFER_SIZE).decode('utf-8')
+        file_name_here, file_size = file_info_data.split(SEPARATOR)
+        print(file_info_data)
+        if file_name_here.endswith('.zip'):
+            print('AACHA bache')
+            receive_folder(client_conn, file_name_here)
+        else:
+            print('Hello')
+            receive_single_file(client_conn, file_info_data)
+
+    except Exception as e:
+        print(f"Error during file/folder reception: {e}")
+    finally:
+        # Close the connection after completing the file/folder reception
+        client_conn.close()
+
+def receive_single_file(client_conn, file_info_data):
+    try:
         filename, filesize = file_info_data.split(SEPARATOR)
-        # remove absolute path if there is
         filename = os.path.basename(filename)
-        # convert to integer
         filesize = int(filesize)
-        # start receiving the file from the socket
+
         progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
         with open(filename, "wb") as f:
             while True:
-                # read 1024 bytes from the socket (receive)
                 bytes_read = client_conn.recv(BUFFER_SIZE)
                 if not bytes_read:
                     progress.close()
                     f.close()
-                    client_conn.close()
                     break
-                # write to the file the bytes we just received
                 f.write(bytes_read)
                 progress.update(len(bytes_read))
-    except socket.error as msg:
-        print("Erorr aaya hai",str(msg))
+
     except Exception as e:
-        print("Erorr aaya hai: ",str(e))
-        msg = client_conn.recv(1024).decode('utf-8')
-        if msg:
-            print(msg)
+        print(f"Error during file reception: {e}")
+
+def receive_folder(client_conn, zip_file_path):
+    try:
+        folder_name = os.path.basename(zip_file_path).replace('.zip', '')
+        receive_zip_file(client_conn, zip_file_path)
+
+        shutil.unpack_archive(zip_file_path, folder_name, 'zip')
+        os.remove(zip_file_path)
+
+    except Exception as e:
+        print(f"Error during folder reception: {e}")
+
+# new helper function for receiving zip files
+def receive_zip_file(client_conn, zip_file_path):
+    print('Hi')
+    print(zip_file_path)
+    with open(zip_file_path, 'wb') as f:
+        while True:
+            bytes_read = client_conn.recv(BUFFER_SIZE)
+            if not bytes_read:
+                break
+            f.write(bytes_read)
