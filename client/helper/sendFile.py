@@ -25,7 +25,7 @@ def send_single_file(file_transfer_conn, file_path):
     try:
         file_name = os.path.basename(file_path)
         print(file_name)
-        filesize = os.path.getsize(file_name)
+        filesize = os.path.getsize(file_path)
         file_transfer_conn.send(f"{file_name}{SEPARATOR}{filesize}".encode())
         filesize = int(filesize)
         total_packet = filesize / BUFFER_SIZE
