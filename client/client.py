@@ -3,15 +3,20 @@ import threading
 import json
 import select
 import inquirer
+from helper.get_lan_ip import get_lan_ip
 global main_server_conn
 BUFFER_SIZE = 1024
 SEPARATOR = '<SEPARATOR>'
+
+# client ip address 
+CLIENT_IP = get_lan_ip()
+print(CLIENT_IP)
 metaData = {
-    "username": "pranavz",
+    "username": "ajay",
     "password": "123456789",
-    "ip_address": "192.168.137.197",
+    "ip_address": CLIENT_IP,
 }
-serverIP = '192.168.137.1'
+serverIP = '192.168.195.200'
 global metadata_json
 metadata_json = json.dumps(metaData)
 

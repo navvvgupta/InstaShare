@@ -1,6 +1,8 @@
 import socket
 import threading
 from helper.receiveFile import receive_file
+from helper.request_class import Request
+import pickle
 
 def client_conn(ip, file_name):
     client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,6 +29,8 @@ def send_message(main_server_conn, username):
     while True:
         user_input = input('')
         message = '{}: {}'.format(username, user_input)
+        
+        # connect to other client for data sharing
         if "connect(" in user_input:
             start_index = user_input.find('(')
             end_index = user_input.find(')')
@@ -35,5 +39,26 @@ def send_message(main_server_conn, username):
             file_name=input(r'')
             receive_thread = threading.Thread(target=client_conn, args=(ip, file_name))
             receive_thread.start()
+        
+        #  request to common server
         elif message:
-            main_server_conn.send(message.encode('utf-8'))
+            print("1")
+            if "list_all_user" in user_input:
+                print("2")
+                req = Request(is_online_user=True)
+                serialized_request = pickle.dumps(req)
+                main_server_conn.send(serialized_request)
+            
+            elif "close" in user_input:
+                print("3")
+                req=Request(is_system=True)
+                serialized_request = pickle.dumps(req)
+                main_server_conn.send(serialized_request)
+            
+            else:
+                print("4")
+                req=Request(is_message=True, content=message)
+                print(req.body['content'])
+                serialized_request = pickle.dumps(req)
+                print(serialized_request)
+                main_server_conn.send(serialized_request)

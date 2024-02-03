@@ -1,5 +1,6 @@
 import socket
 import threading
+import pickle
 import json
 from db.connect import connect_to_mongodb
 from helper.auth import isAuth
@@ -46,26 +47,68 @@ def bind_socket():
 def handle(client):
     while True:
         try:
-            message = client.recv(1024).decode(FORMAT)
-            if "list_all_user" in message:
+            print('Yahan aaya hai code')
+            req_data = client.recv(1024)
+            print('2')
+            req_object = pickle.loads(req_data)
+            print(req_object)
+            
+            # different header 
+            req_online_user = req_object['header']['isOnlineUser']
+            req_message = req_object['header']['isMessage']
+            req_server_close = req_object['header']['isSystem']
+            req_file_sharing = req_object['header']['isFileSharing']
+            req_public_file = req_object['header']['isPublicFile']
+
+            if req_online_user:
                 online_users_info = listOnlineUser()
                 client.send(online_users_info.encode(FORMAT))
-            elif message == "close":
-                 index=clients.index(client)
-                 clients.remove(client)
-                 username=usernames[index]
-                 usernames.remove(username)
-                 client.close()
-                 setOfflineStatus(username)
-                 online_users_info = listOnlineUser()
-                 broadcast(online_users_info.encode(FORMAT),clients)
-
-            elif message:
-            # Broadcasting Messages
+            
+            elif req_message:
+                # Broadcasting Messages
+                message=req_object['body']['content']
                 print(message)
                 broadcast(message.encode(FORMAT),clients)
+            
+            elif req_server_close:
+                # closing the server
+                index=clients.index(client)
+                clients.remove(client)
+                username=usernames[index]
+                usernames.remove(username)
+                client.close()
+                setOfflineStatus(username)
+                online_users_info = listOnlineUser()
+                broadcast(online_users_info.encode(FORMAT),clients)
+            
+            elif req_file_sharing:
+                # protocol to start client2 socket_server 
+                fromC1 = req_object['body']['fromC1']
+                toC2 = req_object['body']['toC2']
+
+
+
+            # message = client.recv(1024).decode(FORMAT)
+            # if "list_all_user" in message:
+            #     online_users_info = listOnlineUser()
+            #     client.send(online_users_info.encode(FORMAT))
+            # elif message == "close":
+            #      index=clients.index(client)
+            #      clients.remove(client)
+            #      username=usernames[index]
+            #      usernames.remove(username)
+            #      client.close()
+            #      setOfflineStatus(username)
+            #      online_users_info = listOnlineUser()
+            #      broadcast(online_users_info.encode(FORMAT),clients)
+
+            # elif message:
+            # # Broadcasting Messages
+            #     print(message)
+            #     broadcast(message.encode(FORMAT),clients)
         except:
             # Removing And Closing Clients
+            print(1)
             index=clients.index(client)
             clients.remove(client)
             username=usernames[index]
