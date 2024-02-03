@@ -3,6 +3,7 @@ import threading
 from helper.receiveFile import receive_file
 from helper.request_class import Request
 import pickle
+import json
 
 def client_conn(ip, file_name):
     client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,19 +47,19 @@ def send_message(main_server_conn, username):
             if "list_all_user" in user_input:
                 print("2")
                 req = Request(is_online_user=True)
-                serialized_request = pickle.dumps(req)
-                main_server_conn.send(serialized_request)
+                serialized_request = json.dumps(req.to_dict())
+                main_server_conn.send(serialized_request.encode())
             
             elif "close" in user_input:
                 print("3")
                 req=Request(is_system=True)
-                serialized_request = pickle.dumps(req)
-                main_server_conn.send(serialized_request)
+                serialized_request = json.dumps(req.to_dict())
+                main_server_conn.send(serialized_request.encode())
             
             else:
                 print("4")
                 req=Request(is_message=True, content=message)
                 print(req.body['content'])
-                serialized_request = pickle.dumps(req)
+                serialized_request = json.dumps(req.to_dict())
                 print(serialized_request)
-                main_server_conn.send(serialized_request)
+                main_server_conn.send(serialized_request.encode())

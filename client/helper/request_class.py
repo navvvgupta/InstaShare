@@ -17,3 +17,6 @@ class Request:
             'fileInfo': file_info,
             'data': data
         }
+    
+    def to_dict(self):
+        return {'header': self.header, 'body': self.body}

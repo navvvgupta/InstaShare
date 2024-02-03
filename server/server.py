@@ -46,11 +46,13 @@ def bind_socket():
 # Handling Messages From Clients
 def handle(client):
     while True:
+        print(232323)
         try:
             print('Yahan aaya hai code')
-            req_data = client.recv(1024)
+            req_data = client.recv(1024).decode()
+            print(req_data)
             print('2')
-            req_object = pickle.loads(req_data)
+            req_object = json.loads(req_data)
             print(req_object)
             
             # different header 
