@@ -12,11 +12,11 @@ SEPARATOR = '<SEPARATOR>'
 CLIENT_IP = get_lan_ip()
 print(CLIENT_IP)
 metaData = {
-    "username": "ajay",
-    "password": "123456789",
+    "username": "pranav",
+    "password": "qwerty1234",
     "ip_address": CLIENT_IP,
 }
-serverIP = '192.168.68.140'
+serverIP = '192.168.195.85'
 global metadata_json
 metadata_json = json.dumps(metaData)
 
