@@ -2,12 +2,16 @@ import socket
 import threading
 import pickle
 import json
+import time
 from db.connect import connect_to_mongodb
 from helper.auth import isAuth
 from helper.userRegistation import userRegistration
+from helper.userUploadInPublicFolder import upload_in_public_folder
+from helper.listPublicFolder import list_public_folder
 from helper.listOnlineUser import listOnlineUser
 from helper.broadcast import broadcast
 from helper.setofflineStatus import setOfflineStatus
+from helper.response_class import Response
 FORMAT = "utf-8"
 
 # Lists For Clients and Their Nicknames
@@ -46,14 +50,9 @@ def bind_socket():
 # Handling Messages From Clients
 def handle(client):
     while True:
-        print(232323)
         try:
-            print('Yahan aaya hai code')
             req_data = client.recv(1024).decode()
-            print(req_data)
-            print('2')
             req_object = json.loads(req_data)
-            print(req_object)
             
             # different header 
             req_online_user = req_object['header']['isOnlineUser']
@@ -64,13 +63,37 @@ def handle(client):
 
             if req_online_user:
                 online_users_info = listOnlineUser()
-                client.send(online_users_info.encode(FORMAT))
+                res = Response(is_message=True,data=online_users_info)
+                serialized_request = json.dumps(res.to_dict())
+                client.send(serialized_request.encode())
             
+            elif req_public_file and req_object['body']['toC2']:
+                # protocol to start client2 socket_server 
+                toC2 = req_object['body']['toC2']
+                result_array = []
+                public_files_and_folder=list_public_folder(toC2)
+                for item in public_files_and_folder:
+                    data_dict = {
+                    'name': item.name,
+                    'isFile': item.is_file,
+                    'path': item.path
+                    }
+                    result_array.append(data_dict)
+                res = Response(is_public_file=True,data=result_array)
+                serialized_request = json.dumps(res.to_dict())
+                client.send(serialized_request.encode())
+
+            elif req_public_file:
+                fileData=req_object['body']['fileInfo']
+                user_ip=req_object['body']['fromC1']
+                print('Mummy kasasm idhar aaya hai')
+                upload_in_public_folder(fileData,user_ip)
+                
             elif req_message:
                 # Broadcasting Messages
                 message=req_object['body']['content']
                 print(message)
-                broadcast(message.encode(FORMAT),clients)
+                broadcast(message,clients)
             
             elif req_server_close:
                 # closing the server
@@ -81,7 +104,7 @@ def handle(client):
                 client.close()
                 setOfflineStatus(username)
                 online_users_info = listOnlineUser()
-                broadcast(online_users_info.encode(FORMAT),clients)
+                broadcast(online_users_info,clients)
             
             elif req_file_sharing:
                 # protocol to start client2 socket_server 
@@ -108,9 +131,10 @@ def handle(client):
             # # Broadcasting Messages
             #     print(message)
             #     broadcast(message.encode(FORMAT),clients)
-        except:
+        except Exception as e:
             # Removing And Closing Clients
-            print(1)
+            print("An error occurred!")
+            print(e)
             index=clients.index(client)
             clients.remove(client)
             username=usernames[index]
@@ -118,7 +142,7 @@ def handle(client):
             client.close()
             setOfflineStatus(username)
             online_users_info = listOnlineUser()
-            broadcast(online_users_info.encode(FORMAT),clients)
+            broadcast(online_users_info,clients)
             break
 
 
@@ -139,8 +163,7 @@ def receive():
         if flag == True:
             print("Connected with {}".format(str(address[0])))
             online_users_info = listOnlineUser()
-            broadcast(online_users_info.encode(FORMAT),clients)
-            client.send('Connected to server!'.encode(FORMAT))
+            broadcast(online_users_info,clients)
             # Start Handling Thread For Client
             thread = threading.Thread(target=handle, args=(client,))
             thread.start()

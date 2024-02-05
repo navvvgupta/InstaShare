@@ -1,12 +1,16 @@
 from models.user import User
 import bcrypt
+from helper.response_class import Response
+import json
 
 def userRegistration(userInfo, client,clients,usernames):
     print("inside userRegistration")
     try:
         existing_user = User.objects(username=userInfo["username"]).first()
         if existing_user:
-            client.send('Username already exists. Choose a different username.'.encode('utf-8'))
+            res = Response(is_message=True,data='Username already exists. Choose a different username.')
+            serialized_request = json.dumps(res.to_dict())
+            client.send(serialized_request.encode())
             return False
 
         hashed_password = bcrypt.hashpw(userInfo["password"].encode('utf-8'), bcrypt.gensalt())
@@ -20,9 +24,14 @@ def userRegistration(userInfo, client,clients,usernames):
         new_user.save()
         clients.append(client)
         usernames.append(userInfo["username"])
-        client.send('Registration successful. Connected to server.'.encode('utf-8'))
+        res = Response(is_message=True,data='Registration successful. Connected to server.')
+        serialized_request = json.dumps(res.to_dict())
+        client.send(serialized_request.encode())
         return True
 
     except Exception as e:
-        client.send(f'Registration failed. Error: {str(e)}'.encode('utf-8'))
+        message=f'Registration failed. Error: {str(e)}'
+        res = Response(is_message=True,data=message)
+        serialized_request = json.dumps(res.to_dict())
+        client.send(serialized_request.encode())
         return False
