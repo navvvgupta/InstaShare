@@ -16,7 +16,7 @@ metaData = {
     "password": "123456789",
     "ip_address": CLIENT_IP,
 }
-serverIP = '192.168.195.200'
+serverIP = '192.168.68.140'
 global metadata_json
 metadata_json = json.dumps(metaData)
 

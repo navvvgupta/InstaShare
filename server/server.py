@@ -5,6 +5,7 @@ import json
 from db.connect import connect_to_mongodb
 from helper.auth import isAuth
 from helper.userRegistation import userRegistration
+from helper.userUploadInPublicFolder import upload_in_public_folder
 from helper.listOnlineUser import listOnlineUser
 from helper.broadcast import broadcast
 from helper.setofflineStatus import setOfflineStatus
@@ -46,14 +47,9 @@ def bind_socket():
 # Handling Messages From Clients
 def handle(client):
     while True:
-        print(232323)
         try:
-            print('Yahan aaya hai code')
             req_data = client.recv(1024).decode()
-            print(req_data)
-            print('2')
             req_object = json.loads(req_data)
-            print(req_object)
             
             # different header 
             req_online_user = req_object['header']['isOnlineUser']
@@ -66,6 +62,12 @@ def handle(client):
                 online_users_info = listOnlineUser()
                 client.send(online_users_info.encode(FORMAT))
             
+            if req_public_file:
+                fileData=req_object['body']['fileInfo']
+                user_ip=req_object['body']['fromC1']
+                print('Mummy kasasm idhar aaya hai')
+                upload_in_public_folder(fileData,user_ip)
+                
             elif req_message:
                 # Broadcasting Messages
                 message=req_object['body']['content']
@@ -108,9 +110,10 @@ def handle(client):
             # # Broadcasting Messages
             #     print(message)
             #     broadcast(message.encode(FORMAT),clients)
-        except:
+        except Exception as e:
             # Removing And Closing Clients
-            print(1)
+            print("An error occurred!")
+            print(e)
             index=clients.index(client)
             clients.remove(client)
             username=usernames[index]
