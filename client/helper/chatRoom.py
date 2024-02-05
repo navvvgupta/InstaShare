@@ -67,7 +67,7 @@ def send_message(main_server_conn, username):
             print(f'Enter the file/folder you want to upload:')
             file_name=input(r'')
             file_data = upload_in_public_folder(file_name)
-            req = Request(is_public_file=True,file_info=file_data,from_c1=get_lan_ip())
+            req = Request(is_public_file=True,file_info=file_data,from_c1='192.168.137.78')
             serialized_request = json.dumps(req.to_dict())
             main_server_conn.send(serialized_request.encode())
         elif "list_public_folder(" in user_input:

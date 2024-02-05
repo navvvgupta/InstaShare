@@ -9,14 +9,14 @@ BUFFER_SIZE = 1024
 SEPARATOR = '<SEPARATOR>'
 
 # client ip address 
-CLIENT_IP = get_lan_ip()
-print(CLIENT_IP)
+# CLIENT_IP = get_lan_ip()
+# print(CLIENT_IP)
 metaData = {
-    "username": "pranav",
-    "password": "qwerty1234",
-    "ip_address": CLIENT_IP,
+    "username": "abhinav",
+    "password": "123456789",
+    "ip_address": '192.168.137.78',
 }
-serverIP = '192.168.195.85'
+serverIP = '192.168.137.78'
 global metadata_json
 metadata_json = json.dumps(metaData)
 

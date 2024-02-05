@@ -2,6 +2,7 @@ import socket
 import threading
 import pickle
 import json
+import time
 from db.connect import connect_to_mongodb
 from helper.auth import isAuth
 from helper.userRegistation import userRegistration
@@ -162,9 +163,6 @@ def receive():
         if flag == True:
             print("Connected with {}".format(str(address[0])))
             online_users_info = listOnlineUser()
-            res = Response(is_message=True,data='Successfully connected to server!')
-            serialized_request = json.dumps(res.to_dict())
-            client.send(serialized_request.encode())
             broadcast(online_users_info,clients)
             # Start Handling Thread For Client
             thread = threading.Thread(target=handle, args=(client,))
