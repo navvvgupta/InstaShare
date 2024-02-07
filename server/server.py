@@ -11,6 +11,7 @@ from helper.listPublicFolder import list_public_folder
 from helper.listOnlineUser import listOnlineUser
 from helper.broadcast import broadcast
 from helper.setofflineStatus import setOfflineStatus
+from helper.searchByFile import searchByFile
 from helper.response_class import Response
 FORMAT = "utf-8"
 
@@ -82,7 +83,25 @@ def handle(client):
                 res = Response(is_public_file=True,data=result_array)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
-
+            
+            elif req_public_file and req_message and req_object['body']['fileInfo']:
+                fileName=req_object['body']['fileInfo']
+                result=searchByFile(fileName)
+                result_array = []
+                for item in result:
+                    # print(item.user)
+                    owner=item.user.username
+                    data_dict = {
+                    'name': item.name,
+                    'isFile': item.is_file,
+                    'path': item.path,
+                    'size': item.size,
+                    'owner': owner
+                    }
+                result_array.append(data_dict)
+                res = Response(is_public_file=True,is_message=True,data=result_array)
+                serialized_request = json.dumps(res.to_dict())
+                client.send(serialized_request.encode())
             elif req_public_file:
                 fileData=req_object['body']['fileInfo']
                 user_ip=req_object['body']['fromC1']

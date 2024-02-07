@@ -25,7 +25,15 @@ def listen_messages(main_server_conn):
             res_file_sharing = res_object['header']['isFileSharing']
             res_public_file = res_object['header']['isPublicFile']
 
-            if res_public_file:
+            if res_public_file and res_message:
+                result_array=res_object['body']['data']
+                for item in result_array:
+                    if item['isFile']:
+                      print(f"File: {item['name']}: {item['path']} :{item['size']}Bytes Owner:{item['owner']}")
+                    else:
+                      print(f"Folder: {item['name']}: {item['path']} :{item['size']}Bytes Owner:{item['owner']}")
+
+            elif res_public_file:
                 # print('Hiiiiiiiiiiiiiiiiiiiiii')
                 result_array=res_object['body']['data']
                 for item in result_array:
@@ -61,9 +69,6 @@ def send_message(main_server_conn, username):
             receive_thread.start()
 
         elif "upload(" in user_input:
-            start_index = user_input.find('(')
-            end_index = user_input.find(')')
-            ip = user_input[start_index + 1 : end_index]
             print(f'Enter the file/folder you want to upload:')
             file_name=input(r'')
             file_data = upload_in_public_folder(file_name)
@@ -73,8 +78,15 @@ def send_message(main_server_conn, username):
         elif "list_public_folder(" in user_input:
             start_index = user_input.find('(')
             end_index = user_input.find(')')
-            ip = user_input[start_index + 1 : end_index]
-            req = Request(is_public_file=True,to_c2=ip)
+            username = user_input[start_index + 1 : end_index]
+            req = Request(is_public_file=True,to_c2=username)
+            serialized_request = json.dumps(req.to_dict())
+            main_server_conn.send(serialized_request.encode())
+        elif "search_by_file(" in user_input:
+            start_index = user_input.find('(')
+            end_index = user_input.find(')')
+            file_name = user_input[start_index + 1 : end_index]
+            req = Request(is_public_file=True,is_message=True,file_info=file_name)
             serialized_request = json.dumps(req.to_dict())
             main_server_conn.send(serialized_request.encode())
         #  request to common server
