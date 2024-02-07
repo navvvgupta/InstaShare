@@ -1,20 +1,15 @@
-
 class Request:
-    def __init__(self, is_message=False, is_system=False, is_file_sharing=False, is_public_file=False,
-                 is_online_user=False, content=None, from_c1=None, to_c2=None, file_info=None, data=None):
+    def __init__(self,upload_to_public_folder=False, is_message=False, close_system=False,search_by_file=False,list_public_data=False,list_online_user=False,data=None):
         self.header = {
+            'searchByFile': search_by_file,
+            'UploadToPublicFolder': upload_to_public_folder,
             'isMessage': is_message,
-            'isSystem': is_system,
-            'isFileSharing': is_file_sharing,
-            'isPublicFile': is_public_file,
-            'isOnlineUser': is_online_user
+            'closeSystem': close_system,
+            'listPublicData': list_public_data,
+            'listOnlineUser': list_online_user,
         }
 
         self.body = {
-            'content': content,
-            'fromC1': from_c1,
-            'toC2': to_c2,
-            'fileInfo': file_info,
             'data': data
         }
     

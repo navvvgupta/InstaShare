@@ -56,11 +56,12 @@ def handle(client):
             req_object = json.loads(req_data)
             
             # different header 
-            req_online_user = req_object['header']['isOnlineUser']
+            req_online_user = req_object['header']['listOnlineUser']
             req_message = req_object['header']['isMessage']
-            req_server_close = req_object['header']['isSystem']
-            req_file_sharing = req_object['header']['isFileSharing']
-            req_public_file = req_object['header']['isPublicFile']
+            req_server_close = req_object['header']['closeSystem']
+            req_upload_to_public_folder = req_object['header']['UploadToPublicFolder']
+            req_list_public_data = req_object['header']['listPublicData']
+            req_search_by_file = req_object['header']['searchByFile']
 
             if req_online_user:
                 online_users_info = listOnlineUser()
@@ -68,49 +69,28 @@ def handle(client):
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
             
-            elif req_public_file and req_object['body']['toC2']:
-                # protocol to start client2 socket_server 
-                toC2 = req_object['body']['toC2']
-                result_array = []
-                public_files_and_folder=list_public_folder(toC2)
-                for item in public_files_and_folder:
-                    data_dict = {
-                    'name': item.name,
-                    'isFile': item.is_file,
-                    'path': item.path
-                    }
-                    result_array.append(data_dict)
+            elif req_list_public_data:
+                username = req_object['body']['data']['username']
+                result_array=list_public_folder(username)
                 res = Response(is_public_file=True,data=result_array)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
             
-            elif req_public_file and req_message and req_object['body']['fileInfo']:
-                fileName=req_object['body']['fileInfo']
-                result=searchByFile(fileName)
-                result_array = []
-                for item in result:
-                    # print(item.user)
-                    owner=item.user.username
-                    data_dict = {
-                    'name': item.name,
-                    'isFile': item.is_file,
-                    'path': item.path,
-                    'size': item.size,
-                    'owner': owner
-                    }
-                result_array.append(data_dict)
+            elif req_search_by_file:
+                fileName=req_object['body']['data']['file_name']
+                result_array=searchByFile(fileName)
                 res = Response(is_public_file=True,is_message=True,data=result_array)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
-            elif req_public_file:
-                fileData=req_object['body']['fileInfo']
-                user_ip=req_object['body']['fromC1']
-                print('Mummy kasasm idhar aaya hai')
-                upload_in_public_folder(fileData,user_ip)
+
+            elif req_upload_to_public_folder:
+                file_data = req_object['body']['data']['file_data']
+                user_ip = req_object['body']['data']['ip']
+                upload_in_public_folder(file_data,user_ip)
                 
             elif req_message:
                 # Broadcasting Messages
-                message=req_object['body']['content']
+                message=req_object['body']['data']
                 print(message)
                 broadcast(message,clients)
             
@@ -125,31 +105,6 @@ def handle(client):
                 online_users_info = listOnlineUser()
                 broadcast(online_users_info,clients)
             
-            elif req_file_sharing:
-                # protocol to start client2 socket_server 
-                fromC1 = req_object['body']['fromC1']
-                toC2 = req_object['body']['toC2']
-
-
-
-            # message = client.recv(1024).decode(FORMAT)
-            # if "list_all_user" in message:
-            #     online_users_info = listOnlineUser()
-            #     client.send(online_users_info.encode(FORMAT))
-            # elif message == "close":
-            #      index=clients.index(client)
-            #      clients.remove(client)
-            #      username=usernames[index]
-            #      usernames.remove(username)
-            #      client.close()
-            #      setOfflineStatus(username)
-            #      online_users_info = listOnlineUser()
-            #      broadcast(online_users_info.encode(FORMAT),clients)
-
-            # elif message:
-            # # Broadcasting Messages
-            #     print(message)
-            #     broadcast(message.encode(FORMAT),clients)
         except Exception as e:
             # Removing And Closing Clients
             print("An error occurred!")

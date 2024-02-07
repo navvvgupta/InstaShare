@@ -72,21 +72,26 @@ def send_message(main_server_conn, username):
             print(f'Enter the file/folder you want to upload:')
             file_name=input(r'')
             file_data = upload_in_public_folder(file_name)
-            req = Request(is_public_file=True,file_info=file_data,from_c1='192.168.137.78')
+            data = {'file_data': file_data, 'ip': '192.168.94.85'}
+            req = Request(upload_to_public_folder=True,data=data)
             serialized_request = json.dumps(req.to_dict())
             main_server_conn.send(serialized_request.encode())
+
         elif "list_public_folder(" in user_input:
             start_index = user_input.find('(')
             end_index = user_input.find(')')
             username = user_input[start_index + 1 : end_index]
-            req = Request(is_public_file=True,to_c2=username)
+            data = {'username': username}
+            req = Request(list_public_data=True,data=data)
             serialized_request = json.dumps(req.to_dict())
             main_server_conn.send(serialized_request.encode())
+
         elif "search_by_file(" in user_input:
             start_index = user_input.find('(')
             end_index = user_input.find(')')
             file_name = user_input[start_index + 1 : end_index]
-            req = Request(is_public_file=True,is_message=True,file_info=file_name)
+            data = {'file_name': file_name}
+            req = Request(search_by_file=True,data=data)
             serialized_request = json.dumps(req.to_dict())
             main_server_conn.send(serialized_request.encode())
         #  request to common server
@@ -94,19 +99,19 @@ def send_message(main_server_conn, username):
             # print("1")
             if "list_all_user" in user_input:
                 # print("2")
-                req = Request(is_online_user=True)
+                req = Request(list_online_user=True)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
             
             elif "close" in user_input:
                 # print("3")
-                req=Request(is_system=True)
+                req=Request(close_system=True)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
             
             else:
                 # print("4")
-                req=Request(is_message=True, content=message)
+                req=Request(is_message=True, data=message)
                 # print(req.body['content'])
                 serialized_request = json.dumps(req.to_dict())
                 # print(serialized_request)

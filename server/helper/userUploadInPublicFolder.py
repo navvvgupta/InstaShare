@@ -2,10 +2,6 @@ from models.publicdata import PublicData
 from models.user import User
 
 def upload_in_public_folder(fileData, user_ip):
-    print('Idhar to aaya hi nhi')
-    print(fileData['isFile'])
-    print('_______')
-    print(fileData['file_content'])
     # Find the user based on the provided IP address
     user = User.objects(ip_address=user_ip).first()
     if user:
