@@ -65,21 +65,21 @@ def handle(client):
 
             if req_online_user:
                 online_users_info = listOnlineUser()
-                res = Response(is_message=True,data=online_users_info)
+                res = Response(list_online_user=True,data=online_users_info)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
             
             elif req_list_public_data:
                 username = req_object['body']['data']['username']
                 result_array=list_public_folder(username)
-                res = Response(is_public_file=True,data=result_array)
+                res = Response(list_public_file_data=True,data=result_array)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
             
             elif req_search_by_file:
                 fileName=req_object['body']['data']['file_name']
                 result_array=searchByFile(fileName)
-                res = Response(is_public_file=True,is_message=True,data=result_array)
+                res = Response(search_by_file_result=True,data=result_array)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
 

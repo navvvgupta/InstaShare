@@ -18,14 +18,21 @@ def listen_messages(main_server_conn):
         try:
             res_data = main_server_conn.recv(1024).decode()
             res_object = json.loads(res_data)
-            # different header 
-            res_online_user = res_object['header']['isOnlineUser']
-            res_message = res_object['header']['isMessage']
-            res_server_close = res_object['header']['isSystem']
-            res_file_sharing = res_object['header']['isFileSharing']
-            res_public_file = res_object['header']['isPublicFile']
 
-            if res_public_file and res_message:
+            # different header 
+            res_online_user = res_object['header']['listOnlineUser']
+            res_message = res_object['header']['isMessage']
+            res_public_file_data = res_object['header']['listPublicFile']
+            res_search_by_file = res_object['header']['searchByFile']
+
+            if res_online_user:
+                online_users_info = res_object['body']['data']
+                for user_info in online_users_info:
+                    username = user_info['username']
+                    ip_address = user_info['ip_address']
+                    print(f"{username} -> {ip_address}")
+
+            elif res_search_by_file:
                 result_array=res_object['body']['data']
                 for item in result_array:
                     if item['isFile']:
@@ -33,18 +40,19 @@ def listen_messages(main_server_conn):
                     else:
                       print(f"Folder: {item['name']}: {item['path']} :{item['size']}Bytes Owner:{item['owner']}")
 
-            elif res_public_file:
-                # print('Hiiiiiiiiiiiiiiiiiiiiii')
+            elif res_public_file_data:
                 result_array=res_object['body']['data']
                 for item in result_array:
                     if item['isFile']:
                       print(f"File: {item['name']}: {item['path']}")
                     else:
                       print(f"Folder: {item['name']}: {item['path']}")
+
             elif res_message:
                 # Broadcasting Messages
                 message=res_object['body']['data']
                 print(message)
+                
         except Exception as e :
             # Close Connection When Error
             print("An error occurred here!")
