@@ -42,6 +42,9 @@ def send_single_file(file_transfer_conn, file_path):
 
     except Exception as e:
         print(f"Error during file transfer: {e}")
+    finally:
+        # Close the connection after completing the file/folder transfer
+        file_transfer_conn.close()
 
 def send_folder(file_transfer_conn, folder_path):
     try:

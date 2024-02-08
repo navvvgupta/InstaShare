@@ -53,6 +53,9 @@ def receive_single_file(client_conn, file_info_data):
 
     except Exception as e:
         print(f"Error during file reception: {e}")
+    finally:
+        # Close the connection after completing the file/folder reception
+        client_conn.close()
 
 def receive_folder(client_conn, zip_file_path):
     try:

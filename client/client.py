@@ -3,26 +3,30 @@ import threading
 import json
 import select
 import inquirer
+import sys
+import signal
+import os
+import dotenv
+import helper.chatRoom as chat
 from helper.get_lan_ip import get_lan_ip
+from helper.sendFile import send_file
+from utils.constants import STOP_THREAD
+
 global main_server_conn
 BUFFER_SIZE = 1024
 SEPARATOR = '<SEPARATOR>'
-
+dotenv.load_dotenv()
 # client ip address 
-# CLIENT_IP = get_lan_ip()
-# print(CLIENT_IP)
+CLIENT_IP = get_lan_ip()
+print(CLIENT_IP)
 metaData = {
-    "username": "abhinav",
-    "password": "123456789",
-    "ip_address": '192.168.94.85',
+    "username": os.getenv('USER_NAME'),
+    "password": os.getenv('PASS_WORD'),
+    "ip_address": os.getenv('MY_IP'),
 }
-serverIP = '192.168.94.85'
+serverIP = os.getenv('SERVER_IP')
 global metadata_json
 metadata_json = json.dumps(metaData)
-
-from helper.sendFile import send_file
-import helper.chatRoom as chat
-
 
 def connect_to_main_server(metadata_json):
     global main_server_conn
@@ -30,10 +34,13 @@ def connect_to_main_server(metadata_json):
         main_server_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         main_server_conn.connect((serverIP, 9999))
         main_server_conn.send(metadata_json.encode('utf-8'))
-        auth = main_server_conn.recv(BUFFER_SIZE).decode('utf-8')
-        if "successful" in auth:
+        auth = main_server_conn.recv(BUFFER_SIZE).decode()
+        auth_object = json.loads(auth)
+        if auth_object['header']['isAuth']:
+            print(auth_object['body']['data'])            
             return True
-        elif auth:
+        elif not auth_object['header']['isAuth']:
+            print(auth_object['body']['data'])
             main_server_conn.close()
             return False
     except socket.error as msg:
@@ -41,6 +48,7 @@ def connect_to_main_server(metadata_json):
 
 # File transfer server(runs on every client)
 def file_transfer_server():
+    global file_transfer_socket
     file_transfer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sockets_list = [file_transfer_socket]
     try:
@@ -86,7 +94,6 @@ def main():
     print(msg)
     flag = connect_to_main_server(msg)
     if flag:
-
         broadcast_message_thread = threading.Thread(target=chat.send_message, args=(main_server_conn, username))
         broadcast_message_thread.start()
 
@@ -100,5 +107,17 @@ def main():
         listen_message_thread.join()
         file_transfer_server_thread.join()
 
-# if __name__ == "__main__":
-main()
+def handle_exit(sig, frame):
+    global main_server_conn
+    global file_transfer_socket
+    STOP_THREAD = True
+    print('Exiting gracefully...')
+    if file_transfer_socket:
+        file_transfer_socket.close()
+    if main_server_conn:
+        main_server_conn.close()
+    sys.exit(0)
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, handle_exit)
+    main()

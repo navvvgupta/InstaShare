@@ -13,11 +13,17 @@ def isAuth(userInfo,client,clients,usernames):
             User.objects(username=username).update_one(set__ip_address=ip_address,set__is_online=True)
             clients.append(client)
             usernames.append(username)
-            res = Response(is_message=True,data='Authentication successful.')
+            res = Response(is_message=True, is_auth=True,data='Authentication successful.')
             serialized_request = json.dumps(res.to_dict())
             client.send(serialized_request.encode())
             print(":)")
             return True
+        else:
+            message=f"User not found or password incorrect."
+            res = Response(is_message=True,data=message)
+            serialized_request = json.dumps(res.to_dict())
+            client.send(serialized_request.encode())
+            print(f"User not found or password incorrect.")
 
     except Exception as e:
         message=f"Error during authentication: {str(e)}"

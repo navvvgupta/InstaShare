@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 # C extensions
 *.so
+public/
+test-client.py
+test-server.py
 .vscode/
 # Distribution / packaging
 .Python

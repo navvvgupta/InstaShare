@@ -3,6 +3,8 @@ import threading
 import pickle
 import json
 import time
+import os
+import dotenv
 from db.connect import connect_to_mongodb
 from helper.auth import isAuth
 from helper.userRegistation import userRegistration
@@ -14,7 +16,7 @@ from helper.setofflineStatus import setOfflineStatus
 from helper.searchByFile import searchByFile
 from helper.response_class import Response
 FORMAT = "utf-8"
-
+dotenv.load_dotenv()
 # Lists For Clients and Their Nicknames
 clients = []
 usernames = []
@@ -105,9 +107,9 @@ def handle(client):
                 online_users_info = listOnlineUser()
                 broadcast(online_users_info,clients)
             
-        except Exception as e:
+        except (socket.error, json.JSONDecodeError, KeyError) as e:
+            print(f"Error handling client: {str(e)}")
             # Removing And Closing Clients
-            print("An error occurred!")
             print(e)
             index=clients.index(client)
             clients.remove(client)
@@ -144,10 +146,12 @@ def receive():
         else:
             client.close()
 
+
 def main(): 
     create_socket()
     bind_socket()
     connect_to_mongodb()
     receive()
 
-main()
+if __name__ == "__main__":
+    main()
