@@ -1,5 +1,6 @@
 import socket
 
+
 def get_lan_ip():
     try:
         # Create a socket connection to an external server
