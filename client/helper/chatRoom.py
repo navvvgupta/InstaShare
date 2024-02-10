@@ -7,12 +7,18 @@ from helper.get_lan_ip import get_lan_ip
 from utils.constants import STOP_THREAD
 import pickle
 import json
+import os
 
 def client_conn(ip, file_name):
-    client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_conn.connect((ip, 10500))
-    client_conn.send(file_name.encode('utf-8'))
-    receive_file(client_conn)
+    try:
+        client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_conn.connect((ip, 10500))
+        client_conn.send(file_name.encode('utf-8'))
+        receive_file(client_conn)
+        client_conn.close()  # Close the connection after file transfer
+        print("File transfer completed successfully.")
+    except Exception as e:
+        print(f"Error in client conn: {str(e)}")
 
 def listen_messages(main_server_conn):
     try:
@@ -80,7 +86,7 @@ def send_message(main_server_conn, username):
                 print(f'Enter the file/folder you want to upload:')
                 file_name=input(r'')
                 file_data = upload_in_public_folder(file_name)
-                data = {'file_data': file_data, 'ip': '192.168.94.118'}
+                data = {'file_data': file_data, 'ip': os.getenv('MY_IP')}
                 req = Request(upload_to_public_folder=True,data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
@@ -103,17 +109,11 @@ def send_message(main_server_conn, username):
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
             #  request to common server
-            elif user_input>=1:
+            elif user_input:
                 # print("1")
                 if "list_all_user" in user_input:
                     # print("2")
                     req = Request(list_online_user=True)
-                    serialized_request = json.dumps(req.to_dict())
-                    main_server_conn.send(serialized_request.encode())
-                
-                elif "close" in user_input:
-                    # print("3")
-                    req=Request(close_system=True)
                     serialized_request = json.dumps(req.to_dict())
                     main_server_conn.send(serialized_request.encode())
                 

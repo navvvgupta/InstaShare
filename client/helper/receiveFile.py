@@ -72,11 +72,15 @@ def receive_folder(client_conn, zip_file_path):
 
 # new helper function for receiving zip files
 def receive_zip_file(client_conn, zip_file_path):
-    print('Hi')
-    print(zip_file_path)
-    with open(zip_file_path, 'wb') as f:
-        while True:
-            bytes_read = client_conn.recv(BUFFER_SIZE)
-            if not bytes_read:
-                break
-            f.write(bytes_read)
+    try:
+        with open(zip_file_path, 'wb') as f:
+            while True:
+                bytes_read = client_conn.recv(BUFFER_SIZE)
+                if not bytes_read:
+                    break
+                f.write(bytes_read)
+        print(f"File received successfully: {zip_file_path}")
+        return True
+    except Exception as e:
+        print(f"Error receiving file: {str(e)}")
+        return False
