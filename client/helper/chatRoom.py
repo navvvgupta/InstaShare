@@ -5,7 +5,8 @@ from helper.request_class import Request
 from helper.upload_in_public_folder import upload_in_public_folder
 from helper.get_lan_ip import get_lan_ip
 from utils.constants import STOP_THREAD
-import pickle
+from helper.request_client import ClientRequest
+from helper.packetOffet import get_packet_for_filename
 import json
 import os
 
@@ -14,7 +15,15 @@ def client_conn(ip, file_name):
     try:
         client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_conn.connect((ip, 10500))
-        client_conn.send(file_name.encode("utf-8"))
+
+        file_search_name = file_name.split("\\")[-1]
+        print("file_search_name", file_search_name)
+        packet_offset = int(get_packet_for_filename(file_search_name))
+        print("kitane packet h", packet_offset)
+        client_request = ClientRequest(filename=file_name, packet_offset=packet_offset)
+        serialized_client_request = json.dumps(client_request.to_dict())
+        client_conn.send(serialized_client_request.encode())
+        # client_conn.send(file_name.encode("utf-8"))
         receive_file(client_conn)
         client_conn.close()  # Close the connection after file transfer
         print("File transfer completed successfully.")
