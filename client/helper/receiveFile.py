@@ -22,22 +22,28 @@ def get_downloads_folder():
     return downloads_folder
 
 
-def receive_file(client_conn):
+def receive_file(client_conn, downloadDict):
     try:
         file_info_data = client_conn.recv(BUFFER_SIZE).decode("utf-8")
         file_name_here, file_size = file_info_data.split(SEPARATOR)
         print(file_name_here)
         if file_name_here.endswith(".zip"):
             print("AACHA bache")
-            receive_folder(client_conn, file_name_here)
+            receive_folder(client_conn, file_name_here, downloadDict)
         else:
             print("Hello")
-            receive_single_file(client_conn, file_info_data)
+            receive_single_file(client_conn, file_info_data, downloadDict)
 
     except Exception as e:
         print(f"Error during file/folder reception: {e}")
     finally:
         # Close the connection after completing the file/folder reception
+        key_name = None
+        if file_name_here.endswith(".zip"):
+            key_name = os.path.basename(file_name_here).replace(".zip", "")
+        else:
+            key_name = os.path.basename(file_name_here)
+        del downloadDict[key_name]
         client_conn.close()
 
 
@@ -168,3 +174,8 @@ def receive_folder(client_conn, zip_file_path):
 #     except Exception as e:
 #         print(f"Error receiving file: {str(e)}")
 #         return False
+
+
+def handlePause(key_name, downloadDict):
+    client_connection = downloadDict[key_name]
+    client_connection.close()

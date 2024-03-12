@@ -12,6 +12,9 @@ from helper.get_lan_ip import get_lan_ip
 from helper.sendFile import send_file
 from utils.constants import STOP_THREAD
 
+downloadDict = {}
+
+
 global main_server_conn
 BUFFER_SIZE = 1024
 SEPARATOR = "<SEPARATOR>"
@@ -102,7 +105,7 @@ def main():
     flag = connect_to_main_server(msg)
     if flag:
         broadcast_message_thread = threading.Thread(
-            target=chat.send_message, args=(main_server_conn, username)
+            target=chat.send_message, args=(main_server_conn, username, downloadDict)
         )
         broadcast_message_thread.start()
 
@@ -123,6 +126,7 @@ def handle_exit(sig, frame):
     global main_server_conn
     global file_transfer_socket
     STOP_THREAD = True
+    downloadDict.clear()
     print("Exiting gracefully...")
     if file_transfer_socket:
         file_transfer_socket.close()

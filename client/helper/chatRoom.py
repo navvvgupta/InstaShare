@@ -7,16 +7,18 @@ from helper.get_lan_ip import get_lan_ip
 from utils.constants import STOP_THREAD
 from helper.request_client import ClientRequest
 from helper.packetOffet import get_packet_for_filename
+from helper.receiveFile import handlePause
 import json
 import os
 
 
-def client_conn(ip, file_name):
+def client_conn(ip, file_name, downloadDict):
     try:
         client_conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_conn.connect((ip, 10500))
 
         file_search_name = file_name.split("\\")[-1]
+        downloadDict[file_search_name] = client_conn
         print("file_search_name", file_search_name)
         packet_offset = int(get_packet_for_filename(file_search_name))
         print("kitane packet h", packet_offset)
@@ -24,7 +26,7 @@ def client_conn(ip, file_name):
         serialized_client_request = json.dumps(client_request.to_dict())
         client_conn.send(serialized_client_request.encode())
         # client_conn.send(file_name.encode("utf-8"))
-        receive_file(client_conn)
+        receive_file(client_conn, downloadDict)
         client_conn.close()  # Close the connection after file transfer
         print("File transfer completed successfully.")
     except Exception as e:
@@ -82,7 +84,7 @@ def listen_messages(main_server_conn):
 
 
 # Broadcasting messages through the main server
-def send_message(main_server_conn, username):
+def send_message(main_server_conn, username, downloadDict):
     try:
         while not STOP_THREAD:
             user_input = input("")
@@ -96,7 +98,7 @@ def send_message(main_server_conn, username):
                 print(f"Enter the file/folder name you want from {ip}: ")
                 file_name = input(r"")
                 receive_thread = threading.Thread(
-                    target=client_conn, args=(ip, file_name)
+                    target=client_conn, args=(ip, file_name, downloadDict)
                 )
                 receive_thread.start()
 
@@ -126,6 +128,12 @@ def send_message(main_server_conn, username):
                 req = Request(search_by_file=True, data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
+
+            elif "Pause(" in user_input:
+                start_index = user_input.find("(")
+                end_index = user_input.find(")")
+                file_name = user_input[start_index + 1 : end_index]
+                handlePause(file_name, downloadDict)
             #  request to common server
             elif user_input:
                 # print("1")
