@@ -61,22 +61,43 @@ def listen_messages(main_server_conn):
 
             if res_online_user:
                 online_users_info = res_object["body"]["data"]
+                print("")
                 for user_info in online_users_info:
                     username = user_info["username"]
                     ip_address = user_info["ip_address"]
-                    print(f"{username} -> {ip_address}")
+                    print(
+                        f"{colored(username, 'blue')} -> {colored(ip_address, 'yellow')}"
+                    )
+                print("")
 
             elif res_search_by_file:
                 result_array = res_object["body"]["data"]
-                for item in result_array:
-                    if item["isFile"]:
-                        print(
-                            f"File: {item['name']}: {item['path']} :{item['size']}Bytes Owner:{item['owner']}"
-                        )
-                    else:
-                        print(
-                            f"Folder: {item['name']}: {item['path']} :{item['size']}Bytes Owner:{item['owner']}"
-                        )
+                print("")
+
+                if "not present." in result_array:
+                    print(colored(result_array, "red"))
+
+                else:
+                    for item in result_array:
+                        if item["isFile"]:
+                            message = (
+                                f"{colored('File:', 'blue')} {colored(item['name'], 'yellow')}: "
+                                f"{colored(format_size(item['size']), 'green')} "
+                                f"{colored('Owner: ' + item['owner'], 'blue')} "
+                                f"{colored('Online' if item['online'] else 'Offline', 'green' if item['online'] else 'red')}"
+                            )
+                            print(message)
+
+                        else:
+                            message = (
+                                f"{colored('Folder:', 'blue')} {colored(item['name'], 'yellow')}: "
+                                f"{colored(format_size(item['size']), 'green')} "
+                                f"{colored('Owner: ' + item['owner'], 'blue')} "
+                                f"{colored('Online' if item['online'] else 'Offline', 'green' if item['online'] else 'red')}"
+                            )
+                            print(message)
+
+                print("")
 
             elif res_public_file_data:
                 result_array = res_object["body"]["data"]
