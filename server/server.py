@@ -1,6 +1,6 @@
 import socket
 import threading
-import pickle
+import pyfiglet
 import json
 import time
 import os
@@ -15,6 +15,7 @@ from helper.broadcast import broadcast
 from helper.setofflineStatus import setOfflineStatus
 from helper.searchByFile import searchByFile
 from helper.response_class import Response
+from termcolor import colored
 
 FORMAT = "utf-8"
 dotenv.load_dotenv()
@@ -22,6 +23,7 @@ dotenv.load_dotenv()
 clients = []
 usernames = []
 ip_address_map = {}
+welcome_text = pyfiglet.figlet_format("ApnaHub Server")
 
 
 # create socket
@@ -44,7 +46,7 @@ def bind_socket():
         global host
         global port
         global s
-        print("Binding the Port: " + str(port))
+        # print("Binding the Port: " + str(port))
 
         s.bind((host, port))
         s.listen(5)
@@ -92,12 +94,11 @@ def handle(client):
             elif req_upload_to_public_folder:
                 file_data = req_object["body"]["data"]["file_data"]
                 user_ip = req_object["body"]["data"]["ip"]
-                upload_in_public_folder(file_data, user_ip)
+                upload_in_public_folder(file_data, user_ip, client)
 
             elif req_message:
                 # Broadcasting Messages
                 message = req_object["body"]["data"]
-                print(message)
                 broadcast(message, clients)
 
             elif req_server_close:
@@ -108,21 +109,25 @@ def handle(client):
                 usernames.remove(username)
                 client.close()
                 setOfflineStatus(username)
-                online_users_info = listOnlineUser()
-                broadcast(online_users_info, clients)
+                # online_users_info = listOnlineUser()
+                message = f"{username} is Disconnected."
+                broadcast(message, clients)
 
         except (socket.error, json.JSONDecodeError, KeyError) as e:
-            print(f"Error handling client: {str(e)}")
+            message = f"Error handling client: {str(e)}"
+            colored_message = colored(message, "red")
+            print(colored_message)
+
             # Removing And Closing Clients
-            print(e)
             index = clients.index(client)
             clients.remove(client)
             username = usernames[index]
             usernames.remove(username)
             client.close()
             setOfflineStatus(username)
-            online_users_info = listOnlineUser()
-            broadcast(online_users_info, clients)
+            # online_users_info = listOnlineUser()
+            message = f"{username} is Disconnected."
+            broadcast(message, clients)
             break
 
 
@@ -131,9 +136,8 @@ def receive():
     while True:
         # Accept Connection
         client, address = s.accept()
-        userInfo_json = client.recv(1024).decode(FORMAT)  # first recv
+        userInfo_json = client.recv(1024).decode(FORMAT)
         userInfo = json.loads(userInfo_json)
-        print(userInfo)
         flag = False
         if userInfo["isLoginAuth"] == "False":
             flag = userRegistration(userInfo, client, clients, usernames)
@@ -141,9 +145,12 @@ def receive():
             flag = isAuth(userInfo, client, clients, usernames)
 
         if flag == True:
-            print("Connected with {}".format(str(address[0])))
-            online_users_info = listOnlineUser()
-            broadcast(online_users_info, clients)
+            message = f'{userInfo["username"]} : {userInfo["ip_address"]} is Connected.'
+            colored_message = colored(message, "green")
+            print(colored_message)
+            # online_users_info = listOnlineUser()
+            message = f'{userInfo["username"]} : {userInfo["ip_address"]} is join.'
+            broadcast(message, clients)
             # Start Handling Thread For Client
             thread = threading.Thread(target=handle, args=(client,))
             thread.start()
@@ -151,10 +158,16 @@ def receive():
             client.close()
 
 
+def welcomeNote():
+    colored_text = colored(welcome_text, "cyan")
+    print(colored_text)
+
+
 def main():
     create_socket()
     bind_socket()
     connect_to_mongodb()
+    welcomeNote()
     receive()
 
 

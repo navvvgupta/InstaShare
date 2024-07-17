@@ -1,8 +1,11 @@
 from models.publicdata import PublicData
 from models.user import User
+from termcolor import colored
+from helper.response_class import Response
+import json
 
 
-def upload_in_public_folder(fileData, user_ip):
+def upload_in_public_folder(fileData, user_ip, client):
     # Find the user based on the provided IP address
     user = User.objects(ip_address=user_ip).first()
     if user:
@@ -16,6 +19,13 @@ def upload_in_public_folder(fileData, user_ip):
             is_file=fileData["isFile"],
         )
         new_upload.save()
-        print("Upload successful!")
+        print(colored("Upload successful!", "green"))
+        res = Response(uploadFile=True, data="Content Uploaded :).")
+        serialized_request = json.dumps(res.to_dict())
+        client.send(serialized_request.encode())
+
     else:
-        print("User not found based on the provided IP address.")
+        print(colored("User not found based on the provided IP address.", "red"))
+        res = Response(uploadFile=True, data="Failed in Uploading the Contennt")
+        serialized_request = json.dumps(res.to_dict())
+        client.send(serialized_request.encode())

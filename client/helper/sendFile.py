@@ -14,6 +14,7 @@ def send_file(file_transfer_conn):
         req_object = json.loads(req_data)
         file_path = req_object["filename"]
         packet_offset = req_object["packet_offset"]
+        print(file_path)
         # file_path = file_transfer_conn.recv(1024).decode("utf-8")
 
         if os.path.isfile(file_path):

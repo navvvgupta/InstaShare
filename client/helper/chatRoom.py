@@ -7,6 +7,8 @@ from helper.get_lan_ip import get_lan_ip
 from utils.constants import STOP_THREAD
 from helper.request_client import ClientRequest
 from helper.packetOffet import get_packet_for_filename
+from termcolor import colored
+
 import json
 import os
 
@@ -19,7 +21,6 @@ def client_conn(ip, file_name):
         file_search_name = file_name.split("\\")[-1]
         print("file_search_name", file_search_name)
         packet_offset = int(get_packet_for_filename(file_search_name))
-        print("kitane packet h", packet_offset)
         client_request = ClientRequest(filename=file_name, packet_offset=packet_offset)
         serialized_client_request = json.dumps(client_request.to_dict())
         client_conn.send(serialized_client_request.encode())
@@ -42,6 +43,7 @@ def listen_messages(main_server_conn):
             res_message = res_object["header"]["isMessage"]
             res_public_file_data = res_object["header"]["listPublicFile"]
             res_search_by_file = res_object["header"]["searchByFile"]
+            res_upload_file = res_object["header"]["uploadFile"]
 
             if res_online_user:
                 online_users_info = res_object["body"]["data"]
@@ -69,6 +71,17 @@ def listen_messages(main_server_conn):
                         print(f"File: {item['name']}: {item['path']}")
                     else:
                         print(f"Folder: {item['name']}: {item['path']}")
+
+            elif res_upload_file:
+                data = res_object["body"]["data"]
+                if "Content Uploaded :)." in data:
+                    print("")
+                    print(colored(data, "green"))
+                    print("")
+                else:
+                    print("")
+                    print(colored(data, "red"))
+                    print("")
 
             elif res_message:
                 # Broadcasting Messages
@@ -128,19 +141,14 @@ def send_message(main_server_conn, username):
                 main_server_conn.send(serialized_request.encode())
             #  request to common server
             elif user_input:
-                # print("1")
                 if "list_all_user" in user_input:
-                    # print("2")
                     req = Request(list_online_user=True)
                     serialized_request = json.dumps(req.to_dict())
                     main_server_conn.send(serialized_request.encode())
 
                 else:
-                    # print("4")
                     req = Request(is_message=True, data=message)
-                    # print(req.body['content'])
                     serialized_request = json.dumps(req.to_dict())
-                    # print(serialized_request)
                     main_server_conn.send(serialized_request.encode())
     except EOFError as e:
         print("Stop send_message", str(e))
