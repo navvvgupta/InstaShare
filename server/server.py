@@ -93,8 +93,8 @@ def handle(client):
 
             elif req_upload_to_public_folder:
                 file_data = req_object["body"]["data"]["file_data"]
-                user_ip = req_object["body"]["data"]["ip"]
-                upload_in_public_folder(file_data, user_ip, client)
+                username = req_object["body"]["data"]["username"]
+                upload_in_public_folder(file_data, username, client)
 
             elif req_message:
                 # Broadcasting Messages

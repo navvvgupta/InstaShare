@@ -32,6 +32,20 @@ def client_conn(ip, file_name):
         print(f"Error in client conn: {str(e)}")
 
 
+def format_size(size_in_bytes):
+    """Convert a size in bytes to a readable format (MB or GB)."""
+    if size_in_bytes >= 1e9:  # Convert to GB if size is 1 GB or more
+        size = size_in_bytes / 1e9
+        unit = "GB"
+    elif size_in_bytes >= 1e6:  # Convert to MB if size is 1 MB or more
+        size = size_in_bytes / 1e6
+        unit = "MB"
+    else:
+        size = size_in_bytes
+        unit = "bytes"
+    return f"{size:.2f} {unit}"
+
+
 def listen_messages(main_server_conn):
     try:
         while not STOP_THREAD:
@@ -66,11 +80,24 @@ def listen_messages(main_server_conn):
 
             elif res_public_file_data:
                 result_array = res_object["body"]["data"]
-                for item in result_array:
-                    if item["isFile"]:
-                        print(f"File: {item['name']}: {item['path']}")
-                    else:
-                        print(f"Folder: {item['name']}: {item['path']}")
+                print(" ")
+
+                if "User not found." in result_array:
+                    print(colored("User not found.", "red"))
+
+                else:
+                    for item in result_array:
+                        if item["isFile"]:
+                            file_text = colored("File:", "blue")
+                            name_text = colored(item["name"], "yellow")
+                            size_text = colored(format_size(item["size"]), "green")
+                            print(f"{file_text} {name_text}: {size_text}")
+                        else:
+                            foler_text = colored("Folder:", "blue")
+                            name_text = colored(item["name"], "yellow")
+                            size_text = colored(format_size(item["size"]), "green")
+                            print(f"{foler_text} {name_text}: {size_text}")
+                print(" ")
 
             elif res_upload_file:
                 data = res_object["body"]["data"]
@@ -117,7 +144,7 @@ def send_message(main_server_conn, username):
                 print(f"Enter the file/folder you want to upload:")
                 file_name = input(r"")
                 file_data = upload_in_public_folder(file_name)
-                data = {"file_data": file_data, "ip": os.getenv("MY_IP")}
+                data = {"file_data": file_data, "username": username}
                 req = Request(upload_to_public_folder=True, data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())

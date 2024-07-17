@@ -8,8 +8,9 @@ def list_public_folder(username):
         public_files_and_folder = PublicData.objects(user=user)
         result_array = []
         for item in public_files_and_folder:
-            data_dict = {"name": item.name, "isFile": item.is_file, "path": item.path}
+            data_dict = {"name": item.name, "isFile": item.is_file, "size": item.size}
             result_array.append(data_dict)
         return result_array
     else:
-        return "User not found based on the provided IP address."
+        msg = "User not found."
+        return msg

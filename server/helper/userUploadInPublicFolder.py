@@ -5,9 +5,9 @@ from helper.response_class import Response
 import json
 
 
-def upload_in_public_folder(fileData, user_ip, client):
-    # Find the user based on the provided IP address
-    user = User.objects(ip_address=user_ip).first()
+def upload_in_public_folder(fileData, username, client):
+    # Find the user based on the provided username
+    user = User.objects(username=username).first()
     if user:
         # User found, create a new PublicData instance
         new_upload = PublicData(
@@ -25,7 +25,7 @@ def upload_in_public_folder(fileData, user_ip, client):
         client.send(serialized_request.encode())
 
     else:
-        print(colored("User not found based on the provided IP address.", "red"))
+        print(colored("User not found based.", "red"))
         res = Response(uploadFile=True, data="Failed in Uploading the Contennt")
         serialized_request = json.dumps(res.to_dict())
         client.send(serialized_request.encode())
