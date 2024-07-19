@@ -1,6 +1,6 @@
 import json
 
-json_file_path = r"client\receiveFileData.json"
+json_file_path = r"C:\Users\rdrl\OneDrive\Desktop\apna-hub\client\receiveFileData.json"
 
 
 def get_packet_for_filename(filename):

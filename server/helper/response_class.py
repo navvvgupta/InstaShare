@@ -6,6 +6,7 @@ class Response:
         search_by_file_result=False,
         list_online_user=False,
         is_auth=False,
+        uploadFile=False,
         data=None,
     ):
         self.header = {
@@ -14,6 +15,7 @@ class Response:
             "listOnlineUser": list_online_user,
             "searchByFile": search_by_file_result,
             "isAuth": is_auth,
+            "uploadFile": uploadFile,
         }
 
         self.body = {"data": data}

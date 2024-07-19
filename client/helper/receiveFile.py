@@ -28,10 +28,8 @@ def receive_file(client_conn):
         file_name_here, file_size = file_info_data.split(SEPARATOR)
         print(file_name_here)
         if file_name_here.endswith(".zip"):
-            print("AACHA bache")
             receive_folder(client_conn, file_name_here)
         else:
-            print("Hello")
             receive_single_file(client_conn, file_info_data)
 
     except Exception as e:
@@ -118,7 +116,6 @@ def receive_folder(client_conn, zip_file_path):
         bytes_downlaoded = packet_offset
 
         print("folder_name", basefolder_name)
-        print("exists karta h ki nhi", os.path.exists(zip_file_path))
 
         if os.path.exists(zip_file_path):
             with open(zip_file_path, "ab") as f:
