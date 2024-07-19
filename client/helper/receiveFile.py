@@ -5,7 +5,8 @@ import shutil
 from helper.packetOffet import get_packet_for_filename
 from helper.jsonFileWrite import write_error_data_to_json
 from helper.remove_filename import remove_filename
-import json
+import sys
+import subprocess
 
 json_file_path = r"client\receiveFileData.json"
 BUFFER_SIZE = 1024
@@ -47,16 +48,25 @@ def receive_single_file(client_conn, file_info_data):
         packet_offset = int(get_packet_for_filename(filename))
         filesize = int(filesize)
 
-        progress = tqdm.tqdm(
-            range(filesize),
-            f"Receiving {filename}",
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-        )
         downloads_path = get_downloads_folder()
         filename = os.path.join(downloads_path, filename)
         bytes_downlaoded = packet_offset
+
+        # Start a new terminal for tqdm progress bar
+        progress_proc = subprocess.Popen(
+            [sys.executable, "progress_bar.py", basefile_name, str(filesize)],
+            stdin=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=True,
+        )
+
+        # progress = tqdm.tqdm(
+        #     range(filesize),
+        #     f"Receiving {filename}",
+        #     unit="B",
+        #     unit_scale=True,
+        #     unit_divisor=1024,
+        # )
 
         if os.path.exists(filename):
             with open(filename, "ab") as f:
@@ -64,11 +74,11 @@ def receive_single_file(client_conn, file_info_data):
                     bytes_read = client_conn.recv(BUFFER_SIZE)
                     bytes_downlaoded += len(bytes_read)
                     if not bytes_read:
-                        progress.close()
                         f.close()
                         break
                     f.write(bytes_read)
-                    progress.update(len(bytes_read))
+                    progress_proc.stdin.write(f"{bytes_downlaoded}\n")
+                    progress_proc.stdin.flush()
 
         else:
             with open(filename, "wb") as f:
@@ -76,11 +86,11 @@ def receive_single_file(client_conn, file_info_data):
                     bytes_read = client_conn.recv(BUFFER_SIZE)
                     bytes_downlaoded += len(bytes_read)
                     if not bytes_read:
-                        progress.close()
                         f.close()
                         break
                     f.write(bytes_read)
-                    progress.update(len(bytes_read))
+                    progress_proc.stdin.write(f"{bytes_downlaoded}\n")
+                    progress_proc.stdin.flush()
 
         # remove file_name from json file when downloading is completed
         remove_filename(basefile_name)
@@ -103,6 +113,8 @@ def receive_single_file(client_conn, file_info_data):
     finally:
         # Close the connection after completing the file/folder reception
         client_conn.close()
+        progress_proc.stdin.close()
+        progress_proc.wait()
 
 
 def receive_folder(client_conn, zip_file_path):
