@@ -138,8 +138,13 @@ def listen_messages(main_server_conn):
 
     except Exception as e:
         # Close Connection When Error
-        print("An error occurred in listen message!")
-        print(e)
+        if "[WinError 10053]" in str(e):
+            print("")
+            print(colored("Thank you for using Imagify! See you next time!.", "blue"))
+            print("")
+        else:
+            print("An error occurred in listen message!")
+            print(e)
 
 
 # Broadcasting messages through the main server
@@ -173,8 +178,8 @@ def send_message(main_server_conn, username):
             elif "list_public_folder(" in user_input:
                 start_index = user_input.find("(")
                 end_index = user_input.find(")")
-                username = user_input[start_index + 1 : end_index]
-                data = {"username": username}
+                username1 = user_input[start_index + 1 : end_index]
+                data = {"username": username1}
                 req = Request(list_public_data=True, data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
@@ -199,6 +204,6 @@ def send_message(main_server_conn, username):
                     serialized_request = json.dumps(req.to_dict())
                     main_server_conn.send(serialized_request.encode())
     except EOFError as e:
-        print("Stop send_message", str(e))
+        print(str(e))
     except Exception as e:
-        print("Send message error", str(e))
+        print(str(e))
