@@ -161,6 +161,9 @@ def receive():
 def welcomeNote():
     colored_text = colored(welcome_text, "cyan")
     print(colored_text)
+    print(colored("Server is Listening...", "green"))
+    print(colored("Connect to the server using the following IP Address.", "green"))
+    print(colored("Server IP: " + socket.gethostbyname(socket.gethostname()), "green"))
 
 
 def main():
