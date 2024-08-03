@@ -5,16 +5,16 @@ import json
 import time
 import os
 import dotenv
-from db.connect import connect_to_mongodb
-from helper.auth import isAuth
-from helper.userRegistation import userRegistration
-from helper.userUploadInPublicFolder import upload_in_public_folder
-from helper.listPublicFolder import list_public_folder
-from helper.listOnlineUser import listOnlineUser
-from helper.broadcast import broadcast
-from helper.setofflineStatus import setOfflineStatus
-from helper.searchByFile import searchByFile
-from helper.response_class import Response
+from .db.connect import connect_to_mongodb
+from .helper.auth import isAuth
+from .helper.userRegistation import userRegistration
+from .helper.userUploadInPublicFolder import upload_in_public_folder
+from .helper.listPublicFolder import list_public_folder
+from .helper.listOnlineUser import listOnlineUser
+from .helper.broadcast import broadcast
+from .helper.setofflineStatus import setOfflineStatus
+from .helper.searchByFile import searchByFile
+from .helper.response_class import Response
 from termcolor import colored
 
 FORMAT = "utf-8"
@@ -166,7 +166,7 @@ def welcomeNote():
     print(colored("Server IP: " + socket.gethostbyname(socket.gethostname()), "green"))
 
 
-def main():
+def server():
     create_socket()
     bind_socket()
     connect_to_mongodb()
@@ -175,4 +175,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    server()

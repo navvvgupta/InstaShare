@@ -1,7 +1,7 @@
-from models.user import User
+from ..models.user import User
 import bcrypt
-from helper.response_class import Response
-from helper.listOnlineUser import listOnlineUser
+from .response_class import Response
+from .listOnlineUser import listOnlineUser
 import json
 
 

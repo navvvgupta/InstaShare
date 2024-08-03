@@ -1,5 +1,5 @@
-from models.publicdata import PublicData
-from models.user import User
+from ..models.publicdata import PublicData
+from ..models.user import User
 
 
 def list_public_folder(username):
