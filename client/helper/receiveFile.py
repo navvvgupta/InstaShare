@@ -2,9 +2,9 @@ import socket
 import os
 import tqdm
 import shutil
-from .packetOffet import get_packet_for_filename
-from .jsonFileWrite import write_error_data_to_json
-from .remove_filename import remove_filename
+from helper.packetOffet import get_packet_for_filename
+from helper.jsonFileWrite import write_error_data_to_json
+from helper.remove_filename import remove_filename
 import sys
 import subprocess
 

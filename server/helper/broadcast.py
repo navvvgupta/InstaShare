@@ -1,5 +1,5 @@
 import json
-from .response_class import Response
+from helper.response_class import Response
 
 
 def broadcast(message, clients):

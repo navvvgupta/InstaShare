@@ -1,12 +1,12 @@
 import socket
 import threading
-from .receiveFile import receive_file
-from .request_class import Request
-from .upload_in_public_folder import upload_in_public_folder
-from .get_lan_ip import get_lan_ip
-from ..utils.constants import STOP_THREAD
-from .request_client import ClientRequest
-from .packetOffet import get_packet_for_filename
+from helper.receiveFile import receive_file
+from helper.request_class import Request
+from helper.upload_in_public_folder import upload_in_public_folder
+from helper.get_lan_ip import get_lan_ip
+from utils.constants import STOP_THREAD
+from helper.request_client import ClientRequest
+from helper.packetOffet import get_packet_for_filename
 from termcolor import colored
 
 import json

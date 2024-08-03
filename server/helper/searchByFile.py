@@ -1,4 +1,4 @@
-from ..models.publicdata import PublicData
+from models.publicdata import PublicData
 
 
 def searchByFile(fileName):

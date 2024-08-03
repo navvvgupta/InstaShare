@@ -1,7 +1,7 @@
-from ..models.publicdata import PublicData
-from ..models.user import User
+from models.publicdata import PublicData
+from models.user import User
 from termcolor import colored
-from .response_class import Response
+from helper.response_class import Response
 import json
 
 

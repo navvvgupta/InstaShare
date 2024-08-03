@@ -7,10 +7,10 @@ import sys
 import signal
 import os
 import dotenv
-from .helper import send_message, listen_messages
-from .helper.get_lan_ip import get_lan_ip
-from .helper.sendFile import send_file
-from .utils.constants import STOP_THREAD
+import helper.chatRoom as chat
+from helper.get_lan_ip import get_lan_ip
+from helper.sendFile import send_file
+from utils.constants import STOP_THREAD
 import pyfiglet
 from termcolor import colored
 
@@ -92,7 +92,7 @@ def file_transfer_server():
 username = metaData["username"]
 
 
-def client():
+def main():
     global metadata_json
     global main_server_conn
     global serverIP
@@ -132,12 +132,12 @@ def client():
 
     if flag:
         broadcast_message_thread = threading.Thread(
-            target=send_message, args=(main_server_conn, username)
+            target=chat.send_message, args=(main_server_conn, username)
         )
         broadcast_message_thread.start()
 
         listen_message_thread = threading.Thread(
-            target=listen_messages, args=(main_server_conn,)
+            target=chat.listen_messages, args=(main_server_conn,)
         )
         listen_message_thread.start()
 
@@ -162,4 +162,4 @@ def handle_exit(sig, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, handle_exit)
-    client()
+    main()
