@@ -1,4 +1,4 @@
-<h1 align="center" id="title">Apna-Hub Decentralized P2P FIle Sharing Platofrm</h1>
+<h1 align="center" id="title">Apna-Hub Decentralized P2P File Sharing Platofrm</h1>
 
 <p id="description">Apna-Hub is a decentralized peer-to-peer (P2P) file-sharing platform inspired by the popular Local DC++ system. Designed to facilitate seamless data exchange within a local network Apna-Hub empowers users with a suite of robust features that streamline the process of sharing and managing files.</p>
 
@@ -14,7 +14,7 @@ Here're some of the project's best features:
 *   Multi-threading Support: To enhance performance Apna-Hub leverages multi-threading enabling users to upload and download multiple files concurrently. This parallel processing capability significantly reduces the time required for large file transfers.
 *   User-friendly CLI: Apna-Hub is designed with a command-line interface (CLI) that is both powerful and easy to use. Users can quickly execute commands to share files monitor transfers and communicate with other peers.
 
-<h2> Function:</h2>
+<h2> Functions</h2>
 
 Here're functions:
 
