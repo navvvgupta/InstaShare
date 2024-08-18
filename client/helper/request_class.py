@@ -1,4 +1,5 @@
 class Request:
+
     def __init__(
         self,
         upload_to_public_folder=False,
@@ -7,6 +8,7 @@ class Request:
         search_by_file=False,
         list_public_data=False,
         list_online_user=False,
+        search_file_user=False,
         data=None,
     ):
         self.header = {
@@ -16,6 +18,7 @@ class Request:
             "closeSystem": close_system,
             "listPublicData": list_public_data,
             "listOnlineUser": list_online_user,
+            "search_file_user": search_file_user,
         }
 
         self.body = {"data": data}

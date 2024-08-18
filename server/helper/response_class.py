@@ -1,4 +1,5 @@
 class Response:
+
     def __init__(
         self,
         is_message=False,
@@ -6,6 +7,7 @@ class Response:
         search_by_file_result=False,
         list_online_user=False,
         is_auth=False,
+        search_file_user_result=False,
         uploadFile=False,
         data=None,
     ):
@@ -15,6 +17,7 @@ class Response:
             "listOnlineUser": list_online_user,
             "searchByFile": search_by_file_result,
             "isAuth": is_auth,
+            "search_file_user": search_file_user_result,
             "uploadFile": uploadFile,
         }
 

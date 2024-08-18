@@ -85,16 +85,6 @@ def receive_single_file(client_conn, file_info_data):
         # remove file_name from json file when downloading is completed
         remove_filename(basefile_name)
 
-        # with open(filename, "wb") as f:
-        #     while True:
-        #         bytes_read = client_conn.recv(BUFFER_SIZE)
-        #         if not bytes_read:
-        #             progress.close()
-        #             f.close()
-        #             break
-        #         f.write(bytes_read)
-        #         progress.update(len(bytes_read))
-
     except Exception as e:
         print(f"Error during file reception: {e}")
         error_data = {basefile_name: bytes_downlaoded}
@@ -140,7 +130,6 @@ def receive_folder(client_conn, zip_file_path):
         # remove folder_name from json file when downloading is completed
         remove_filename(basefolder_name)
 
-        # receive_zip_file(client_conn, zip_file_path)
         folder_name = os.path.join(downloads_path, folder_name)
         shutil.unpack_archive(zip_file_path, folder_name, "zip")
         os.remove(zip_file_path)
@@ -149,19 +138,3 @@ def receive_folder(client_conn, zip_file_path):
         print(f"Error during folder reception: {e}")
         error_data = {basefolder_name: bytes_downlaoded}
         write_error_data_to_json(error_data)
-
-
-# new helper function for receiving zip files
-# def receive_zip_file(client_conn, zip_file_path):
-#     try:
-#         with open(zip_file_path, "wb") as f:
-#             while True:
-#                 bytes_read = client_conn.recv(BUFFER_SIZE)
-#                 if not bytes_read:
-#                     break
-#                 f.write(bytes_read)
-#         print(f"File received successfully: {zip_file_path}")
-#         return True
-#     except Exception as e:
-#         print(f"Error receiving file: {str(e)}")
-#         return False

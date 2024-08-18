@@ -21,6 +21,7 @@ def list_files_and_folders(directory, indent=""):
                 )  # Recursive call with increased indentation
     except (Exception, OSError) as e:
         result += f"Error accessing directory {directory}: {str(e)}\n"
+    print(result)
     return result
 
 
@@ -36,11 +37,12 @@ def upload_in_public_folder(file_name):
             }
             return file_details_dict
         elif os.path.isdir(file_name):
+            file_content = list_files_and_folders(file_name)
             folder_details_dict = {
                 "isFile": False,
                 "file_baseName": os.path.basename(file_name),
                 "file_path": file_name,
-                "file_content": list_files_and_folders(file_name),
+                "file_content": file_content,
                 "file_size": total_size,
             }
             return folder_details_dict

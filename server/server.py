@@ -15,6 +15,7 @@ from helper.broadcast import broadcast
 from helper.setofflineStatus import setOfflineStatus
 from helper.searchByFile import searchByFile
 from helper.response_class import Response
+from helper.searchSingleUser import searchSingleUser
 from termcolor import colored
 
 FORMAT = "utf-8"
@@ -70,6 +71,7 @@ def handle(client):
             req_upload_to_public_folder = req_object["header"]["UploadToPublicFolder"]
             req_list_public_data = req_object["header"]["listPublicData"]
             req_search_by_file = req_object["header"]["searchByFile"]
+            req_search_file_user = req_object["header"]["search_file_user"]
 
             if req_online_user:
                 online_users_info = listOnlineUser()
@@ -100,6 +102,17 @@ def handle(client):
                 # Broadcasting Messages
                 message = req_object["body"]["data"]
                 broadcast(message, clients)
+
+            elif req_search_file_user:
+                user_name = req_object["body"]["data"]["user_name"]
+                file_name = req_object["body"]["data"]["file_name"]
+                print(user_name)
+                print(file_name)
+                res_user = searchSingleUser(user_name, file_name)
+                res = Response(search_file_user_result=True, data=res_user)
+                print(res)
+                serialized_request = json.dumps(res.to_dict())
+                client.send(serialized_request.encode())
 
             elif req_server_close:
                 # closing the server
@@ -145,11 +158,13 @@ def receive():
             flag = isAuth(userInfo, client, clients, usernames)
 
         if flag == True:
-            message = f'{userInfo["username"]} : {userInfo["ip_address"]} is Connected.'
+            message = (
+                f'{userInfo["username"]} : {userInfo["ip_address"]} has Connected.'
+            )
             colored_message = colored(message, "green")
             print(colored_message)
             # online_users_info = listOnlineUser()
-            message = f'{userInfo["username"]} : {userInfo["ip_address"]} is join.'
+            message = f'{userInfo["username"]} : {userInfo["ip_address"]} has join.'
             broadcast(message, clients)
             # Start Handling Thread For Client
             thread = threading.Thread(target=handle, args=(client,))

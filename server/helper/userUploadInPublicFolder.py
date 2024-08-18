@@ -20,7 +20,7 @@ def upload_in_public_folder(fileData, username, client):
         )
         new_upload.save()
         print(colored("Upload successful!", "green"))
-        res = Response(uploadFile=True, data="Content Uploaded :).")
+        res = Response(uploadFile=True, data="Content Uploaded 📁.")
         serialized_request = json.dumps(res.to_dict())
         client.send(serialized_request.encode())
 

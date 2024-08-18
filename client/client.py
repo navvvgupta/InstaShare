@@ -25,7 +25,7 @@ metaData = {
     "password": os.getenv("PASS_WORD"),
     "ip_address": os.getenv("MY_IP"),
 }
-serverIP = os.getenv("SERVER_IP")
+# serverIP = os.getenv("SERVER_IP")
 global metadata_json
 metadata_json = json.dumps(metaData)
 
@@ -85,7 +85,8 @@ def file_transfer_server():
                     send_file_thread.start()
 
     except socket.error as msg:
-        print("Socket creation error: " + str(msg))
+        if not "[WinError 10038]" in str(msg):
+            print("Socket creation error: " + str(msg))
 
 
 username = metaData["username"]
@@ -94,6 +95,7 @@ username = metaData["username"]
 def main():
     global metadata_json
     global main_server_conn
+    global serverIP
 
     # welcome note
     big_text = pyfiglet.figlet_format("WelCome to ApnaHub")
@@ -116,6 +118,7 @@ def main():
     selected = answers["action"]
     username = input("Enter your username: ")
     password = input("Enter your password: ")
+    serverIP = input("Enter Server IP address: ")
     ip = CLIENT_IP
     print(colored(f"Your current IP address is: {ip}", "green"))
     metadata_dict = {"username": username, "password": password, "ip_address": ip}
@@ -124,8 +127,9 @@ def main():
         metadata_dict["isLoginAuth"] = "False"
     if selected == "Login":
         metadata_dict["isLoginAuth"] = "True"
-    msg = json.dumps(metadata_dict)
-    flag = connect_to_main_server(msg)
+    meta_data = json.dumps(metadata_dict)
+    flag = connect_to_main_server(meta_data)
+
     if flag:
         broadcast_message_thread = threading.Thread(
             target=chat.send_message, args=(main_server_conn, username)
@@ -149,7 +153,6 @@ def handle_exit(sig, frame):
     global main_server_conn
     global file_transfer_socket
     STOP_THREAD = True
-    print("Exiting gracefully...")
     if file_transfer_socket:
         file_transfer_socket.close()
     if main_server_conn:

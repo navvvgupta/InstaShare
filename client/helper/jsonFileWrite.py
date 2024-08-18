@@ -12,7 +12,6 @@ def write_error_data_to_json(error_data):
                 if not isinstance(existing_data, list):
                     existing_data = [existing_data]
             except json.JSONDecodeError:
-                # Handle case where file exists but is empty or not valid JSON
                 pass
 
     basefolder_name = list(error_data.keys())[0]

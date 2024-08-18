@@ -58,6 +58,7 @@ def listen_messages(main_server_conn):
             res_public_file_data = res_object["header"]["listPublicFile"]
             res_search_by_file = res_object["header"]["searchByFile"]
             res_upload_file = res_object["header"]["uploadFile"]
+            res_search_file_user = res_object["header"]["search_file_user"]
 
             if res_online_user:
                 online_users_info = res_object["body"]["data"]
@@ -122,7 +123,7 @@ def listen_messages(main_server_conn):
 
             elif res_upload_file:
                 data = res_object["body"]["data"]
-                if "Content Uploaded :)." in data:
+                if "Content Uploaded 📁." in data:
                     print("")
                     print(colored(data, "green"))
                     print("")
@@ -131,6 +132,23 @@ def listen_messages(main_server_conn):
                     print(colored(data, "red"))
                     print("")
 
+            elif res_search_file_user:
+                data = res_object["body"]["data"]
+                if "User does not exit" in data:
+                    print("User does not exit.")
+                elif "File or folder does not exist" in data:
+                    print("File or folder does not exit.")
+                else:
+                    ip_address = data["user"]["ip_address"]
+                    file_path = data["file"]["path"]
+                    print(ip_address)
+                    print(file_path)
+                    receive_thread = threading.Thread(
+                        target=client_conn, args=(ip_address, file_path)
+                    )
+
+                    receive_thread.start()
+
             elif res_message:
                 # Broadcasting Messages
                 message = res_object["body"]["data"]
@@ -138,8 +156,13 @@ def listen_messages(main_server_conn):
 
     except Exception as e:
         # Close Connection When Error
-        print("An error occurred in listen message!")
-        print(e)
+        if "[WinError 10053]" in str(e):
+            print("")
+            print(colored("Thank you for using ApnaHub! See you next time!.", "blue"))
+            print("")
+        else:
+            print("An error occurred in listen message!")
+            print(e)
 
 
 # Broadcasting messages through the main server
@@ -153,13 +176,20 @@ def send_message(main_server_conn, username):
             if "connect(" in user_input:
                 start_index = user_input.find("(")
                 end_index = user_input.find(")")
-                ip = user_input[start_index + 1 : end_index]
-                print(f"Enter the file/folder name you want from {ip}: ")
+                user_name = user_input[start_index + 1 : end_index]
+                print(f"Enter the file/folder name you want from {user_name}: ")
                 file_name = input(r"")
-                receive_thread = threading.Thread(
-                    target=client_conn, args=(ip, file_name)
-                )
-                receive_thread.start()
+                data = {"user_name": user_name, "file_name": file_name}
+                print(data)
+                req = Request(search_file_user=True, data=data)
+                serialized_request = json.dumps(req.to_dict())
+                main_server_conn.send(serialized_request.encode())
+
+                # receive_thread = threading.Thread(
+                #     target=client_conn, args=(user_name, file_name)
+                # )
+
+                # receive_thread.start()
 
             elif "upload(" in user_input:
                 print(f"Enter the file/folder you want to upload:")
@@ -199,6 +229,6 @@ def send_message(main_server_conn, username):
                     serialized_request = json.dumps(req.to_dict())
                     main_server_conn.send(serialized_request.encode())
     except EOFError as e:
-        print("Stop send_message", str(e))
+        print(str(e))
     except Exception as e:
-        print("Send message error", str(e))
+        print(str(e))
