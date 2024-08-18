@@ -106,11 +106,8 @@ def handle(client):
             elif req_search_file_user:
                 user_name = req_object["body"]["data"]["user_name"]
                 file_name = req_object["body"]["data"]["file_name"]
-                print(user_name)
-                print(file_name)
                 res_user = searchSingleUser(user_name, file_name)
                 res = Response(search_file_user_result=True, data=res_user)
-                print(res)
                 serialized_request = json.dumps(res.to_dict())
                 client.send(serialized_request.encode())
 

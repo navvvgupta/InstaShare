@@ -12,6 +12,8 @@ from termcolor import colored
 import json
 import os
 
+file_client_map = {}
+
 
 def client_conn(ip, file_name):
     try:
@@ -25,10 +27,13 @@ def client_conn(ip, file_name):
         serialized_client_request = json.dumps(client_request.to_dict())
         client_conn.send(serialized_client_request.encode())
         # client_conn.send(file_name.encode("utf-8"))
+        file_client_map[file_search_name] = client_conn
         receive_file(client_conn)
+        del file_client_map[file_search_name]
         client_conn.close()  # Close the connection after file transfer
         print("File transfer completed successfully.")
     except Exception as e:
+        del file_client_map[file_search_name]
         print(f"Error in client conn: {str(e)}")
 
 
@@ -141,8 +146,6 @@ def listen_messages(main_server_conn):
                 else:
                     ip_address = data["user"]["ip_address"]
                     file_path = data["file"]["path"]
-                    print(ip_address)
-                    print(file_path)
                     receive_thread = threading.Thread(
                         target=client_conn, args=(ip_address, file_path)
                     )
@@ -180,7 +183,6 @@ def send_message(main_server_conn, username):
                 print(f"Enter the file/folder name you want from {user_name}: ")
                 file_name = input(r"")
                 data = {"user_name": user_name, "file_name": file_name}
-                print(data)
                 req = Request(search_file_user=True, data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
@@ -217,6 +219,16 @@ def send_message(main_server_conn, username):
                 req = Request(search_by_file=True, data=data)
                 serialized_request = json.dumps(req.to_dict())
                 main_server_conn.send(serialized_request.encode())
+
+            elif "pause(" in user_input:
+                start_index = user_input.find("(")
+                end_index = user_input.find(")")
+                file_name = user_input[start_index + 1 : end_index]
+                if file_name is not file_client_map:
+                    print("connection has closed.")
+                    return
+                file_connection = file_client_map[file_name]
+                file_connection.close()
             #  request to common server
             elif user_input:
                 if "list_all_user" in user_input:
