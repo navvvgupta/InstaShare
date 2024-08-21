@@ -24,7 +24,7 @@ dotenv.load_dotenv()
 clients = []
 usernames = []
 ip_address_map = {}
-welcome_text = pyfiglet.figlet_format("ApnaHub Server")
+welcome_text = pyfiglet.figlet_format("InstaShare Server")
 
 
 # create socket

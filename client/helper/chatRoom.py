@@ -161,7 +161,9 @@ def listen_messages(main_server_conn):
         # Close Connection When Error
         if "[WinError 10053]" in str(e):
             print("")
-            print(colored("Thank you for using ApnaHub! See you next time!.", "blue"))
+            print(
+                colored("Thank you for using InstaShare! See you next time!.", "blue")
+            )
             print("")
         else:
             print("An error occurred in listen message!")

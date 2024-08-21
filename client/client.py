@@ -98,7 +98,7 @@ def main():
     global serverIP
 
     # welcome note
-    big_text = pyfiglet.figlet_format("WelCome to ApnaHub")
+    big_text = pyfiglet.figlet_format("WelCome to InstaShare")
     width = 300
     centered_text = big_text.strip().center(width)
     colored_text = colored(centered_text, "cyan")
