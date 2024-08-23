@@ -1,13 +1,13 @@
-<h1 align="center" id="title">IntraShare Decentralized P2P File Sharing Platofrm</h1>
+<h1 align="center" id="title">InstaShare Decentralized P2P File Sharing Platofrm</h1>
 
-<p id="description">IntraShare is a decentralized peer-to-peer (P2P) file-sharing platform inspired by the popular Local DC++ system. Designed to facilitate seamless data exchange within a local network IntraShare empowers users with a suite of robust features that streamline the process of sharing and managing files.</p>
+<p id="description">InstaShare is a decentralized peer-to-peer (P2P) file-sharing platform inspired by the popular Local DC++ system. Designed to facilitate seamless data exchange within a local network InstaShare empowers users with a suite of robust features that streamline the process of sharing and managing files.</p>
 
   
 <h2>🧐 Features</h2>
 
 Here're some of the project's best features:
 
-*   Decentralized Network: IntraShare operates on a decentralized network ensuring that there is no single point of failure. Users can connect directly with one another to share files without relying on a central server.
+*   Decentralized Network: InstaShare operates on a decentralized network ensuring that there is no single point of failure. Users can connect directly with one another to share files without relying on a central server.
 *   Real-time Chat: The platform is equipped with an integrated chat feature that allows users to communicate with one another in real-time.
 *   Multiple File Sharing: -Hub allows users to share multiple files simultaneously. Whether you're distributing large datasets or sharing media files the platform handles it with ease.
 *   Download Management: -Hub includes advanced download management features such as the ability to pause and resume downloads. This ensures that even if a connection is interrupted the download can be resumed from where it left off without any data loss.
@@ -33,13 +33,13 @@ Here're functions:
 <p>1. Clone the repository:</p>
 
 ```
-git clone https://github.com/yourusername/IntraShare.git
+git clone https://github.com/yourusername/InstaShare.git
 ```
 
 <p>2. Navigate to the project directory:</p>
 
 ```
-cd IntraShare
+cd InstaShare
 ```
 
 <p>3. Install the required dependencies:</p>
@@ -48,7 +48,7 @@ cd IntraShare
 pip install -r requirements.txt
 ```
 
-<p>4. Run IntraShare</p>
+<p>4. Run InstaShare</p>
 
 ```
 python client/client.py
